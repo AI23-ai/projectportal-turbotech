@@ -1,0 +1,322 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Project Portal - FastAPI + Lambda Web Adapter + DynamoDB
+  Deploys entire FastAPI application as single Lambda function
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: The deployment environment
+
+  LogLevel:
+    Type: String
+    Default: INFO
+    AllowedValues:
+      - DEBUG
+      - INFO
+      - WARNING
+      - ERROR
+    Description: Log level for application
+
+  CorsOrigin:
+    Type: String
+    Default: '*'
+    Description: Allowed origin for CORS
+
+  Auth0Domain:
+    Type: String
+    Description: Your Auth0 domain (e.g., your-domain.auth0.com)
+
+  Auth0Audience:
+    Type: String
+    Description: Your Auth0 API audience
+
+Resources:
+  # Single Lambda Function running entire FastAPI app
+  FastAPIFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      MemorySize: 1024
+      Timeout: 30
+      Tracing: Active
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+          LOG_LEVEL: !Ref LogLevel
+          DYNAMODB_TABLE_PREFIX: !Sub 'portal-${Environment}'
+          AUTH0_DOMAIN: !Ref Auth0Domain
+          AUTH0_AUDIENCE: !Ref Auth0Audience
+          CORS_ORIGIN: !Ref CorsOrigin
+          # DynamoDB table names
+          DELIVERABLES_TABLE: !Ref DeliverablesTable
+          METRICS_TABLE: !Ref MetricsTable
+          UPDATES_TABLE: !Ref UpdatesTable
+          USERS_TABLE: !Ref UsersTable
+          SAMPLE_PROJECTS_TABLE: !Ref SampleProjectsTable
+          ACTION_ITEMS_TABLE: !Ref ActionItemsTable
+          MEETINGS_TABLE: !Ref MeetingsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DeliverablesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MetricsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UpdatesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SampleProjectsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActionItemsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MeetingsTable
+      Events:
+        # Catch-all route - forwards ALL requests to FastAPI
+        ProxyApiRoot:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: ANY
+            ApiId: !Ref HttpApi
+        ProxyApiGreedy:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            ApiId: !Ref HttpApi
+    Metadata:
+      DockerTag: python3.10-fastapi
+      DockerContext: .
+      Dockerfile: Dockerfile
+
+  # HTTP API (simpler than REST API, lower cost, better for Lambda Web Adapter)
+  # CORS is handled by FastAPI middleware (see main.py), not API Gateway.
+  # This avoids conflicts between dual CORS configs — FastAPI reads the
+  # CORS_ORIGIN env var and sets headers accordingly.
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+
+  # DynamoDB Tables
+
+  # Users Table
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "portal-${Environment}-users"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+        - AttributeName: auth0_id
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: Auth0IdIndex
+          KeySchema:
+            - AttributeName: auth0_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: EmailIndex
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  # Deliverables Table
+  DeliverablesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "portal-${Environment}-deliverables"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+        - AttributeName: month
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: MonthIndex
+          KeySchema:
+            - AttributeName: month
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  # Metrics Table
+  MetricsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "portal-${Environment}-metrics"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  # Updates Table (Communication Hub)
+  UpdatesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "portal-${Environment}-updates"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+        - AttributeName: created_at
+          AttributeType: S
+        - AttributeName: update_type
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: CreatedAtIndex
+          KeySchema:
+            - AttributeName: created_at
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: TypeIndex
+          KeySchema:
+            - AttributeName: update_type
+              KeyType: HASH
+            - AttributeName: created_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  # Sample Projects Table
+  SampleProjectsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "portal-${Environment}-sample-projects"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+        - AttributeName: delivery_method
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: DeliveryMethodIndex
+          KeySchema:
+            - AttributeName: delivery_method
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  # Action Items Table
+  ActionItemsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "portal-${Environment}-action-items"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+        - AttributeName: status
+          AttributeType: S
+        - AttributeName: responsible_party
+          AttributeType: S
+        - AttributeName: meeting_id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: StatusIndex
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: ResponsiblePartyIndex
+          KeySchema:
+            - AttributeName: responsible_party
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: MeetingIdIndex
+          KeySchema:
+            - AttributeName: meeting_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  # Meetings Table
+  MeetingsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "portal-${Environment}-meetings"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+        - AttributeName: meeting_date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: MeetingDateIndex
+          KeySchema:
+            - AttributeName: meeting_date
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/"
+
+  FastAPIFunctionArn:
+    Description: "FastAPI Lambda Function ARN"
+    Value: !GetAtt FastAPIFunction.Arn
+
+  DeliverablesTable:
+    Description: "DynamoDB Deliverables Table"
+    Value: !Ref DeliverablesTable
+
+  MetricsTable:
+    Description: "DynamoDB Metrics Table"
+    Value: !Ref MetricsTable
+
+  UpdatesTable:
+    Description: "DynamoDB Updates Table"
+    Value: !Ref UpdatesTable
+
+  UsersTable:
+    Description: "DynamoDB Users Table"
+    Value: !Ref UsersTable
+
+  SampleProjectsTable:
+    Description: "DynamoDB Sample Projects Table"
+    Value: !Ref SampleProjectsTable
+
+  ActionItemsTable:
+    Description: "DynamoDB Action Items Table"
+    Value: !Ref ActionItemsTable
+
+  MeetingsTable:
+    Description: "DynamoDB Meetings Table"
+    Value: !Ref MeetingsTable

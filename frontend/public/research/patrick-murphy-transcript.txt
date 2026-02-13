@@ -1,0 +1,264 @@
+[00:01] [Music]
+[00:06] welcome to built by Builders this is our
+[00:08] video series highlighting construction
+[00:10] professionals who have started tech
+[00:12] companies uh to provide the solutions
+[00:15] within our
+[00:16] industry uh for the very things that
+[00:19] they found as pain points and issues
+[00:22] that needed to be solved within our
+[00:23] industry and we believe it's that kind
+[00:25] of leadership from within that is really
+[00:28] what's needed to truly Drive Drive our
+[00:30] industry forward so I have today Patrick
+[00:32] Murphy the founder and CEO of toggle.
+[00:36] and also a leader within the Coastal
+[00:39] Construction business in Florida Welcome
+[00:41] today Patrick thank you Steve thanks for
+[00:43] having me I'd love to talk and hear more
+[00:45] about toggle and and how it is different
+[00:48] from the traditional tools that project
+[00:51] teams are using today to do their
+[00:53] estimate work first of all tole the name
+[00:56] tole AI the full word means builder in
+[00:59] the Irish language gck a little factoid
+[01:01] there uh and it's a spin out of Coastal
+[01:03] Construction our family business uh
+[01:06] we're been blessed to become one of the
+[01:07] largest contractors in Florida and
+[01:09] biggest piece of overhead in our company
+[01:11] is is estimated biggest piece of that is
+[01:13] takeoffs and you know as we all know in
+[01:15] the industry takeoffs take a lot of time
+[01:17] it's a manual process clicking and
+[01:19] dragging and basically coloring we had
+[01:22] the idea to use artificial intelligence
+[01:24] to automate that coloring aspect of it
+[01:27] and believe that estimators are are
+[01:29] better Suited spending their time on
+[01:30] value engineering scoping bid leveling
+[01:33] you know all the tasks that really help
+[01:35] make a bid better and win more work so
+[01:38] uh originally built togle uh to to
+[01:41] really just be used for Coastal save us
+[01:43] money as we started seeing it working we
+[01:45] decided to to spin it out and now we're
+[01:47] fully in the market uh we've got over I
+[01:50] think 700 users now uh some some big
+[01:52] companies some small companies
+[01:53] everything in the middle and uh we're
+[01:55] automating the takeoff process so uh
+[01:58] very excited about that excited about
+[01:59] with the future holds and uh had a
+[02:01] couple companies do some case studies
+[02:03] and um Coastal did one of those last
+[02:06] year and found that they saved almost a
+[02:08] million dollars in their first year
+[02:10] using togle straight to the bottom line
+[02:12] so it's driving some real efficiency I
+[02:14] know you're keeping busy a lot of fun
+[02:16] stuff too and concentric is also in in
+[02:18] the precon space like us how much time
+[02:21] do you think is is wasted inputting
+[02:23] manual data into spreadsheets on a
+[02:25] regular basis a
+[02:27] lot I mean you know pre Construction in
+[02:30] its nature is not a one-time thing right
+[02:32] so throughout the the life cycle of that
+[02:35] pre-con engagement on one project you'll
+[02:38] have your team maybe it's one person
+[02:39] maybe it's five it could be a dozen or
+[02:42] more but they're constantly iterating so
+[02:44] they're doing a lot of the same thing
+[02:47] periodically updating with more new and
+[02:50] more information so not only are they
+[02:52] repeating a lot of the same processes
+[02:56] over and over and over but they're doing
+[02:58] it with the same manual
+[03:00] inefficient tools I think people are
+[03:04] running at a 50 to 60% inefficiency rate
+[03:07] so it's you know whether it's one and a
+[03:09] half to almost two times the effort to
+[03:11] get the one thing done that is
+[03:13] incredibly wasteful but for the smaller
+[03:15] companies that process I mean it's
+[03:18] hundreds and like you pointed out it's
+[03:19] hundreds and hundreds of thousands of
+[03:21] dollars of waste in people hours and you
+[03:25] know the bigger companies it's it's
+[03:27] easily Millions when you add it all up
+[03:29] together and it's not just the cost it's
+[03:31] the opportunity loss that's almost
+[03:34] incalculable because all of those people
+[03:36] hours doing that thing that wasteful
+[03:38] thing that could have been using that
+[03:40] for the thought work and the
+[03:41] relationship work or just having more
+[03:44] bandwidth to take on other projects and
+[03:48] yield more you know upside for their
+[03:50] respective companies is you know almost
+[03:52] incalculable so Patrick you know
+[03:54] building on that why do you think it is
+[03:57] that there hasn't been that level of
+[03:58] Technology ad advancement in this
+[04:01] preconstruction phase that we're both
+[04:03] passionate about it's a great question
+[04:05] like you said I think it's critical it's
+[04:07] addressed it's got to be done right it's
+[04:08] the beginning of of all jobs is precon
+[04:10] so it's got to be done right and as we
+[04:12] know it's it is often one of the biggest
+[04:14] cost drivers for reasons why it hasn't
+[04:17] you know I think a lot of it has to do
+[04:19] with a lot of the the the technology
+[04:22] that that we've seen in the industry um
+[04:25] hasn't come from insiders it's come from
+[04:26] Outsiders and unless you're an Insider
+[04:29] like us you don't really understand some
+[04:31] of the the real issues with precon and
+[04:34] and what it takes to truly do it in the
+[04:36] amount of detail that goes into it but
+[04:39] the Nuance the art that goes into it but
+[04:42] then the inefficiency that goes into it
+[04:44] right and how you know On Any Given job
+[04:46] you know just from the total standpoint
+[04:49] there's a hundred people doing the exact
+[04:51] same thing easily on on every job right
+[04:53] I have job of any any size right with
+[04:56] all the different trades and contractors
+[04:58] doing the exact same takeoffs I mean
+[04:59] it's crazy how much repeated work there
+[05:01] is and sort of wasted time but with the
+[05:04] tools available that's the only way to
+[05:06] do it so you know I think a lot of it
+[05:07] has to do with with just construction
+[05:09] being thin margins people not having the
+[05:12] the the mindset capabilities to invest
+[05:15] in the technology needed and and having
+[05:18] Outsiders trying to solve problems that
+[05:20] that maybe weren't even problems right
+[05:22] maybe focusing on the wrong things and
+[05:24] maybe there's a sexy problem but maybe
+[05:25] it's not really solving something so uh
+[05:28] I think I think um I think we're finally
+[05:30] coming around so I'm excited about
+[05:31] companies like yours and mine but Steve
+[05:33] you know what's your vision for how to
+[05:35] how to solve these problems and and and
+[05:36] in the pre-con phase for Builders I
+[05:38] think first and foremost having the
+[05:41] right balance between tools that are
+[05:44] super powerful and and saving a lot of
+[05:46] time and doing it in a very smart way
+[05:48] like toggle at the same time also a from
+[05:51] a broader preconstruction perspective
+[05:53] having a holistic approach which is
+[05:55] really our main focus in that how do you
+[05:58] take all of the different functions and
+[06:02] workflows that make up this very
+[06:05] iterative generally fractured process of
+[06:08] preconstruction and bring it all in
+[06:10] together and so you know our vision at
+[06:12] concentric is to be the platform that
+[06:15] unites the process unites the data um
+[06:19] and pulls all the people together so
+[06:22] that way we can drive for the most
+[06:24] affordable sustainable and predictable
+[06:27] outcomes for these projects we want to
+[06:29] be the one that helps bring it all
+[06:32] together whether it's companies and
+[06:33] people uh and the right assembly of
+[06:36] these tools as well as what we will
+[06:39] organically build you know when there
+[06:40] isn't anything else out there or on the
+[06:43] horizon and if we can build all of that
+[06:45] and Stitch it together the power of the
+[06:48] data going from one project to the next
+[06:51] there's this flywheel effect this
+[06:53] positive impact that you're getting
+[06:55] better and smarter and the data is your
+[06:58] data and it Serv serving you in much
+[07:00] more powerful ways will still will
+[07:04] really start to become a parent to
+[07:06] everybody and I think is going to be a
+[07:07] real natural um motivator uh for
+[07:11] everybody to really rethink about how
+[07:14] they do not how they do preconstruction
+[07:16] but the tools the elect to use in order
+[07:19] to do preconstruction better and smarter
+[07:22] but you know it's um these are fun
+[07:24] challenges to solve uh I have my hats
+[07:26] off to you guys you guys you guys are
+[07:28] winning Awards words you guys I mean you
+[07:30] yourself are uh was invited to be part
+[07:33] of the White House committees on export
+[07:36] and everything related to construction
+[07:39] so congratulations on that but you know
+[07:41] how do you think the AI element of what
+[07:43] toggle is doing is going to change
+[07:46] change the industry first of all lucky
+[07:48] to have a great team you know just like
+[07:49] you it's it's all about that that team
+[07:51] and coming together mix of the the AI
+[07:54] you know algorithm mathematicians and
+[07:57] all that the folks we got doing all that
+[07:58] with with the construction right sort of
+[08:00] the raw construction coming together
+[08:02] that that marriage is where I think it's
+[08:04] exciting the tech uh sometimes has a
+[08:06] tendency to sort of out outpace what
+[08:08] could really be adopted and so I think
+[08:11] similar to what you're doing togle isn't
+[08:13] trying to change the whole process we're
+[08:15] just incrementally improving one step of
+[08:17] it right we're not trying to uh predict
+[08:19] everything just one piece of it right's
+[08:21] simplify it and while we've got some big
+[08:23] ideas with artificial intelligence and
+[08:25] what the future holds some of the recent
+[08:27] releases with chat GP and generative Ai
+[08:30] and all are going to be transformational
+[08:32] for our industry I think we will all
+[08:34] live in a in a world again I don't know
+[08:36] how long but where generative
+[08:39] construction documents are made with
+[08:41] some very minor input uh Architects and
+[08:43] engineers and a lot of that engineering
+[08:45] that goes into it will be automated
+[08:47] right there's enough data that's out
+[08:48] there there's been enough jobs built and
+[08:50] a much of this is can be boiled down to
+[08:53] math that it can be automated now that's
+[08:55] the end goal how do you get there
+[08:57] there's a long way to go uh one of of
+[08:59] the things we're we're working on right
+[09:00] now is is predictive change orders you
+[09:03] know basically looking at at the data
+[09:05] set of all the jobs that have been built
+[09:08] and comparing that to Future jobs and as
+[09:12] we all know once you get to the field
+[09:14] there's a lot of change orders that are
+[09:16] kind of obvious that should have been
+[09:18] caught the computer can catch that
+[09:20] because the computer is smart enough and
+[09:22] can now it's affordable to analyze
+[09:24] literally millions of previous plans
+[09:26] that have been built that are up to code
+[09:28] and working and so that's the big you
+[09:30] know I think breakthrough now is that
+[09:32] it's affordable for the computers to do
+[09:34] a lot of this manual work and and quit
+[09:36] Reinventing plane every time you want to
+[09:38] fly in it right we don't have to
+[09:40] reinvent the wheel it's been done before
+[09:42] let's use that data to improve the
+[09:43] process exciting stuff exciting stuff
+[09:46] and it's fun to partner with togle on on
+[09:48] on what we're all collectively doing so
+[09:51] appreciate you being part of this
+[09:52] Patrick and uh thank you for your time
+[09:55] doing again we're gonna have to do this
+[09:57] again we okay sounds good I appreciate
+[09:59] your time thanks Patrick thank you
+[10:02] [Music]
+[10:08] byebye

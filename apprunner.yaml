@@ -1,0 +1,37 @@
+# AWS App Runner configuration for monorepo with Next.js frontend
+# NOTE: This file is for reference/local App Runner CLI usage.
+# Production deployments use the CloudFormation stack in infra/frontend-stack.yaml.
+version: 1.0
+runtime: nodejs18
+
+build:
+  commands:
+    build:
+      - npm --prefix frontend ci
+      - rm -rf frontend/.next/cache
+      - cd frontend && npm run build
+
+run:
+  command: npm --prefix frontend start
+  network:
+    port: 3000
+    env: PORT
+  env:
+    - name: NODE_ENV
+      value: production
+    - name: NEXT_PUBLIC_API_URL
+      value: "${NEXT_PUBLIC_API_URL}"
+    - name: AUTH0_SECRET
+      value: "${AUTH0_SECRET}"
+    - name: AUTH0_BASE_URL
+      value: "${AUTH0_BASE_URL}"
+    - name: AUTH0_ISSUER_BASE_URL
+      value: "${AUTH0_ISSUER_BASE_URL}"
+    - name: AUTH0_CLIENT_ID
+      value: "${AUTH0_CLIENT_ID}"
+    - name: AUTH0_CLIENT_SECRET
+      value: "${AUTH0_CLIENT_SECRET}"
+    - name: AUTH0_AUDIENCE
+      value: "${AUTH0_AUDIENCE}"
+    - name: AUTH0_SCOPE
+      value: openid profile email

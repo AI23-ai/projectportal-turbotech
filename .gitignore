@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Production
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.db
+*.sqlite
+postgres_data/
+redis_data/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Misc
+*.cert
+*.key
+*.pem
+
+# Client Data (do not commit sensitive project files)
+data/
+# Allow specific reference docs on case-by-case basis by force-adding
+
+# AWS Build Artifacts
+backend/.aws-sam/
+.aws-sam/
+aws/
+
+# Screenshots (temporary files)
+*.png
+Screenshot*.png

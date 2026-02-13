@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Project Portal - Frontend (App Runner)
+  Next.js application deployed via AWS App Runner from GitHub source
+
+Parameters:
+  Environment:
+    Type: String
+    Default: staging
+    AllowedValues:
+      - staging
+      - prod
+    Description: Deployment environment
+
+  GitHubConnectionArn:
+    Type: String
+    Description: >
+      ARN of the App Runner GitHub connection.
+      Create at https://console.aws.amazon.com/apprunner/home#/github-connections
+      and complete the OAuth handshake before deploying this stack.
+
+  GitHubRepositoryUrl:
+    Type: String
+    Default: ''
+    Description: GitHub repository URL
+
+  GitHubBranch:
+    Type: String
+    Default: main
+    Description: Branch to deploy from
+
+  ApiGatewayUrl:
+    Type: String
+    Description: >
+      Backend API Gateway URL (e.g., https://abc123.execute-api.us-east-2.amazonaws.com).
+      Obtain from the backend stack output after deploying it.
+
+  Auth0IssuerBaseUrl:
+    Type: String
+    Description: 'Auth0 issuer URL (e.g., https://your-tenant.us.auth0.com)'
+
+  Auth0Audience:
+    Type: String
+    Description: 'Auth0 API audience (e.g., https://your-api-audience)'
+
+  Auth0Organization:
+    Type: String
+    Default: ''
+    Description: 'Auth0 organization ID (optional, for multi-tenant setups)'
+
+  Auth0BaseUrl:
+    Type: String
+    Default: 'https://PLACEHOLDER'
+    Description: >
+      The App Runner service URL for Auth0 callbacks.
+      Set to placeholder on first deploy, then update with the actual
+      App Runner URL via a stack update.
+
+Resources:
+  AppRunnerInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'portal-${Environment}-frontend-instance-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: tasks.apprunner.amazonaws.com
+            Action: sts:AssumeRole
+
+  AppRunnerService:
+    Type: AWS::AppRunner::Service
+    Properties:
+      ServiceName: !Sub 'portal-${Environment}-frontend'
+      SourceConfiguration:
+        AuthenticationConfiguration:
+          ConnectionArn: !Ref GitHubConnectionArn
+        AutoDeploymentsEnabled: true
+        CodeRepository:
+          RepositoryUrl: !Ref GitHubRepositoryUrl
+          SourceCodeVersion:
+            Type: BRANCH
+            Value: !Ref GitHubBranch
+          CodeConfiguration:
+            ConfigurationSource: API
+            CodeConfigurationValues:
+              Runtime: NODEJS_22
+              BuildCommand: !Sub 'npm --prefix frontend ci && rm -rf frontend/.next/cache && cd frontend && NEXT_PUBLIC_API_URL=${ApiGatewayUrl} NEXT_PUBLIC_AUTH0_ORGANIZATION=${Auth0Organization} npm run build'
+              StartCommand: 'npm --prefix frontend start'
+              Port: '3000'
+              RuntimeEnvironmentVariables:
+                - Name: NODE_ENV
+                  Value: production
+                - Name: NEXT_PUBLIC_API_URL
+                  Value: !Ref ApiGatewayUrl
+                - Name: NEXT_PUBLIC_AUTH0_ORGANIZATION
+                  Value: !Ref Auth0Organization
+                - Name: AUTH0_BASE_URL
+                  Value: !Ref Auth0BaseUrl
+                - Name: AUTH0_ISSUER_BASE_URL
+                  Value: !Ref Auth0IssuerBaseUrl
+                - Name: AUTH0_AUDIENCE
+                  Value: !Ref Auth0Audience
+                - Name: AUTH0_SCOPE
+                  Value: 'openid profile email'
+                - Name: AUTH0_SECRET
+                  Value: !Sub '{{resolve:secretsmanager:portal-${Environment}/auth0-frontend:SecretString:AUTH0_SECRET}}'
+                - Name: AUTH0_CLIENT_ID
+                  Value: !Sub '{{resolve:secretsmanager:portal-${Environment}/auth0-frontend:SecretString:AUTH0_CLIENT_ID}}'
+                - Name: AUTH0_CLIENT_SECRET
+                  Value: !Sub '{{resolve:secretsmanager:portal-${Environment}/auth0-frontend:SecretString:AUTH0_CLIENT_SECRET}}'
+      InstanceConfiguration:
+        Cpu: '1 vCPU'
+        Memory: '2 GB'
+        InstanceRoleArn: !GetAtt AppRunnerInstanceRole.Arn
+
+Outputs:
+  ServiceUrl:
+    Description: App Runner service URL
+    Value: !Sub 'https://${AppRunnerService.ServiceUrl}'
+
+  ServiceArn:
+    Description: App Runner service ARN
+    Value: !GetAtt AppRunnerService.ServiceArn
