@@ -2,14 +2,16 @@
 Jerry AI Status and Capabilities API endpoints
 Provides information about Jerry's current status, capabilities, and software foundation
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from typing import Dict
 from datetime import datetime
+from services.auth import verify_token
 
 router = APIRouter()
 
 
 @router.get("/")
-async def get_jerry_status():
+async def get_jerry_status(token: Dict = Depends(verify_token)):
     """Get Jerry's current status, capabilities, and infrastructure"""
 
     # Jerry's capabilities
@@ -218,7 +220,7 @@ async def get_jerry_status():
 
 
 @router.get("/metrics")
-async def get_jerry_metrics():
+async def get_jerry_metrics(token: Dict = Depends(verify_token)):
     """Get Jerry's key performance metrics"""
     return {
         "symbolDetection": {
@@ -250,7 +252,7 @@ async def get_jerry_metrics():
 
 
 @router.get("/roadmap")
-async def get_jerry_roadmap():
+async def get_jerry_roadmap(token: Dict = Depends(verify_token)):
     """Get Jerry's learning roadmap"""
     return {
         "now": {

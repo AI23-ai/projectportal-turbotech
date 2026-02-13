@@ -2,10 +2,11 @@
 Communication/Updates API endpoints
 Post and retrieve project updates
 """
-from fastapi import APIRouter, HTTPException
-from typing import Optional
+from fastapi import APIRouter, HTTPException, Depends
+from typing import Optional, Dict
 from pydantic import BaseModel
 from db.adapters.updates import UpdateAdapter
+from services.auth import verify_token
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ class UpdateCreate(BaseModel):
 
 
 @router.get("/")
-async def get_updates(type_filter: Optional[str] = None):
+async def get_updates(type_filter: Optional[str] = None, token: Dict = Depends(verify_token)):
     """Get all project updates (most recent first)"""
     adapter = UpdateAdapter()
     updates = await adapter.get_all(update_type=type_filter)
@@ -32,7 +33,7 @@ async def get_updates(type_filter: Optional[str] = None):
 
 
 @router.post("/")
-async def create_update(update: UpdateCreate):
+async def create_update(update: UpdateCreate, token: Dict = Depends(verify_token)):
     """Post a new project update"""
     adapter = UpdateAdapter()
 
@@ -62,7 +63,7 @@ async def create_update(update: UpdateCreate):
 
 
 @router.post("/{update_id}/acknowledge")
-async def acknowledge_update(update_id: int, user_email: str):
+async def acknowledge_update(update_id: int, user_email: str, token: Dict = Depends(verify_token)):
     """Acknowledge an update (mark as read)"""
     adapter = UpdateAdapter()
 

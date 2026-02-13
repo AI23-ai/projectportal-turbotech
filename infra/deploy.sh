@@ -171,6 +171,21 @@ if echo "$FRONTEND_SECRET" | grep -q "PLACEHOLDER_REPLACE_ME"; then
   echo ""
 fi
 
+# ── Phase 1.5: Check for existing frontend URL (for CORS) ─────────────────
+CORS_ORIGIN="*"
+EXISTING_FRONTEND_URL=$(aws cloudformation describe-stacks \
+  --stack-name "${FRONTEND_STACK_NAME}" \
+  --region "${REGION}" \
+  --query "Stacks[0].Outputs[?OutputKey=='ServiceUrl'].OutputValue" \
+  --output text 2>/dev/null || echo "")
+
+if [[ -n "$EXISTING_FRONTEND_URL" ]] && [[ "$EXISTING_FRONTEND_URL" != "None" ]]; then
+  CORS_ORIGIN="${EXISTING_FRONTEND_URL}"
+  echo "Using existing frontend URL for CORS: ${CORS_ORIGIN}"
+else
+  echo "No existing frontend — using permissive CORS for initial deploy (will be tightened in Phase 5.5)"
+fi
+
 # ── Phase 2: Deploy Backend (SAM) ───────────────────────────────────────────
 if [[ "$SKIP_BACKEND" == false ]]; then
   echo ""
@@ -220,7 +235,7 @@ if [[ "$SKIP_BACKEND" == false ]]; then
       "Environment=${ENVIRONMENT}" \
       "Auth0Domain=${AUTH0_DOMAIN}" \
       "Auth0Audience=${AUTH0_AUDIENCE}" \
-      "CorsOrigin=*" \
+      "CorsOrigin=${CORS_ORIGIN}" \
     --no-fail-on-empty-changeset \
     --resolve-image-repos
 
@@ -324,6 +339,29 @@ if [[ "$SKIP_FRONTEND" == false ]]; then
       --no-fail-on-empty-changeset
   else
     echo "AUTH0_BASE_URL already set: ${EXISTING_AUTH0_BASE_URL}"
+  fi
+
+  # ── Phase 5.5: Tighten CORS on backend with actual frontend URL ──────────
+  if [[ "$CORS_ORIGIN" == "*" ]] && [[ "$SKIP_BACKEND" == false ]] && [[ -n "$FRONTEND_URL" ]] && [[ "$FRONTEND_URL" != "None" ]]; then
+    echo ""
+    echo "=== Phase 5.5: Tightening backend CORS ==="
+    echo "Updating CorsOrigin from * to: ${FRONTEND_URL}"
+
+    pushd "$(dirname "$0")/../backend" > /dev/null
+    sam deploy \
+      --template-file .aws-sam/build/template.yaml \
+      --stack-name "${BACKEND_STACK_NAME}" \
+      --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
+      --region "${REGION}" \
+      --s3-bucket "${SAM_S3_BUCKET}" \
+      --parameter-overrides \
+        "Environment=${ENVIRONMENT}" \
+        "Auth0Domain=${AUTH0_DOMAIN}" \
+        "Auth0Audience=${AUTH0_AUDIENCE}" \
+        "CorsOrigin=${FRONTEND_URL}" \
+      --no-fail-on-empty-changeset \
+      --resolve-image-repos
+    popd > /dev/null
   fi
 else
   echo ""
