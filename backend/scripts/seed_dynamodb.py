@@ -8,7 +8,7 @@ Usage:
 """
 import boto3
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 
@@ -17,7 +17,7 @@ def seed_deliverables(table_name, region='us-east-2'):
     dynamodb = boto3.resource('dynamodb', region_name=region)
     table = dynamodb.Table(table_name)
 
-    now = datetime.now(datetime.UTC)
+    now = datetime.now(timezone.utc)
     deliverables = [
         {
             "id": 1,
@@ -100,7 +100,7 @@ def seed_metrics(table_name, region='us-east-2'):
     dynamodb = boto3.resource('dynamodb', region_name=region)
     table = dynamodb.Table(table_name)
 
-    now = datetime.now(datetime.UTC)
+    now = datetime.now(timezone.utc)
     metrics = [
         {
             "id": 0,
@@ -151,7 +151,7 @@ def seed_updates(table_name, region='us-east-2'):
     dynamodb = boto3.resource('dynamodb', region_name=region)
     table = dynamodb.Table(table_name)
 
-    now = datetime.now(datetime.UTC)
+    now = datetime.now(timezone.utc)
     updates = [
         {
             "id": 1,
@@ -201,7 +201,7 @@ def seed_meetings(table_name, region='us-east-2'):
     dynamodb = boto3.resource('dynamodb', region_name=region)
     table = dynamodb.Table(table_name)
 
-    now = datetime.now(datetime.UTC)
+    now = datetime.now(timezone.utc)
     meetings = [
         {
             "id": 1,
@@ -239,7 +239,7 @@ def seed_action_items(table_name, region='us-east-2'):
     dynamodb = boto3.resource('dynamodb', region_name=region)
     table = dynamodb.Table(table_name)
 
-    now = datetime.now(datetime.UTC)
+    now = datetime.now(timezone.utc)
     action_items = [
         {
             "id": 1,
