@@ -34,10 +34,10 @@ This requires a one-time OAuth handshake per AWS account that can't be automated
 
 ```bash
 # Staging
-./deploy.sh --environment=staging --github-connection-arn=arn:aws:apprunner:us-east-2:ACCOUNT:connection/NAME/ID --github-repo-url=https://github.com/YOUR-ORG/YOUR-REPO
+./deploy.sh --environment=staging --project=turbotech --github-connection-arn=arn:aws:apprunner:us-east-2:ACCOUNT:connection/NAME/ID --github-repo-url=https://github.com/YOUR-ORG/YOUR-REPO
 
 # Production
-./deploy.sh --environment=prod --github-connection-arn=arn:aws:apprunner:us-east-2:ACCOUNT:connection/NAME/ID --github-repo-url=https://github.com/YOUR-ORG/YOUR-REPO
+./deploy.sh --environment=prod --project=turbotech --github-connection-arn=arn:aws:apprunner:us-east-2:ACCOUNT:connection/NAME/ID --github-repo-url=https://github.com/YOUR-ORG/YOUR-REPO
 ```
 
 ### 3. Populate Secrets
@@ -108,6 +108,7 @@ Note: The frontend auto-deploys from GitHub on push to `main` via App Runner. Ma
 
 Required:
   --environment=ENV              Deployment environment (staging, prod)
+  --project=NAME                 Project short name for AWS tagging (lowercase, no spaces)
   --github-connection-arn=ARN    App Runner GitHub connection ARN
   --github-repo-url=URL         GitHub repository URL
 
@@ -121,3 +122,7 @@ Optional:
   --skip-backend                 Skip backend deployment
   --skip-frontend                Skip frontend deployment
 ```
+
+## Resource Tagging
+
+All AWS resources are tagged with `project=<name>` using the required `--project` flag. This tag propagates from CloudFormation stacks to all resources they create (DynamoDB tables, Lambda functions, API Gateway, App Runner, Secrets Manager secrets, IAM roles, etc.). The S3 artifact bucket is also tagged directly. Use this tag for cost allocation, resource filtering, and cleanup.

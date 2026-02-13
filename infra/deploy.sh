@@ -32,6 +32,7 @@ AUTH0_AUDIENCE=""
 AUTH0_ORGANIZATION=""
 SKIP_BACKEND=false
 SKIP_FRONTEND=false
+PROJECT_NAME=""
 
 # ── Parse Arguments ──────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -45,6 +46,7 @@ while [[ $# -gt 0 ]]; do
     --auth0-audience=*)           AUTH0_AUDIENCE="${1#*=}" ;;
     --auth0-organization=*)       AUTH0_ORGANIZATION="${1#*=}" ;;
     --github-branch=*)            GITHUB_BRANCH="${1#*=}" ;;
+    --project=*)                  PROJECT_NAME="${1#*=}" ;;
     --skip-backend)               SKIP_BACKEND=true ;;
     --skip-frontend)              SKIP_FRONTEND=true ;;
     *)
@@ -54,6 +56,7 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Required:"
       echo "  --environment=ENV              Deployment environment (staging, prod)"
+      echo "  --project=NAME                 Project short name for tagging (lowercase, no spaces)"
       echo "  --github-connection-arn=ARN    App Runner GitHub connection ARN"
       echo "  --github-repo-url=URL         GitHub repository URL"
       echo ""
@@ -84,6 +87,15 @@ if [[ "$ENVIRONMENT" != "staging" && "$ENVIRONMENT" != "prod" ]]; then
   exit 1
 fi
 
+if [[ -z "$PROJECT_NAME" ]]; then
+  echo "ERROR: --project is required (e.g. --project=turbotech)"
+  exit 1
+fi
+if ! [[ "$PROJECT_NAME" =~ ^[a-z0-9-]+$ ]]; then
+  echo "ERROR: --project must be lowercase alphanumeric with hyphens only (got '${PROJECT_NAME}')"
+  exit 1
+fi
+
 # Derive GITHUB_REPO_URL from git remote if not provided
 if [[ -z "$GITHUB_REPO_URL" ]]; then
   GITHUB_REPO_URL=$(git -C "$(dirname "$0")/.." remote get-url origin 2>/dev/null || echo "")
@@ -104,6 +116,7 @@ echo "========================================"
 echo "  Deploying: ${ENVIRONMENT}"
 echo "========================================"
 echo ""
+echo "  Project:         ${PROJECT_NAME}"
 echo "  Region:          ${REGION}"
 echo "  Secrets stack:   ${SECRETS_STACK_NAME}"
 echo "  Backend stack:   ${BACKEND_STACK_NAME}"
@@ -146,6 +159,7 @@ aws cloudformation deploy \
   --stack-name "${SECRETS_STACK_NAME}" \
   --region "${REGION}" \
   --parameter-overrides Environment="${ENVIRONMENT}" \
+  --tags project="${PROJECT_NAME}" \
   --no-fail-on-empty-changeset
 
 # Check if secrets still have placeholder values
@@ -196,6 +210,8 @@ if [[ "$SKIP_BACKEND" == false ]]; then
     SAM_S3_BUCKET="turbotech-deployments-${ENVIRONMENT}"
     echo "Using default S3 bucket: ${SAM_S3_BUCKET}"
     aws s3 mb "s3://${SAM_S3_BUCKET}" --region "${REGION}" 2>/dev/null || true
+    aws s3api put-bucket-tagging --bucket "${SAM_S3_BUCKET}" --region "${REGION}" \
+      --tagging "TagSet=[{Key=project,Value=${PROJECT_NAME}}]" 2>/dev/null || true
   fi
 
   # Read Auth0 backend config from Secrets Manager if not provided via args
@@ -236,6 +252,7 @@ if [[ "$SKIP_BACKEND" == false ]]; then
       "Auth0Domain=${AUTH0_DOMAIN}" \
       "Auth0Audience=${AUTH0_AUDIENCE}" \
       "CorsOrigin=${CORS_ORIGIN}" \
+    --tags "project=${PROJECT_NAME}" \
     --no-fail-on-empty-changeset \
     --resolve-image-repos
 
@@ -307,6 +324,7 @@ if [[ "$SKIP_FRONTEND" == false ]]; then
       "Auth0Audience=${AUTH0_AUDIENCE}" \
       "Auth0Organization=${AUTH0_ORGANIZATION}" \
       "Auth0BaseUrl=${EXISTING_AUTH0_BASE_URL}" \
+    --tags project="${PROJECT_NAME}" \
     --no-fail-on-empty-changeset
 
   # ── Phase 5: Update AUTH0_BASE_URL with actual App Runner URL ────────────
@@ -336,6 +354,7 @@ if [[ "$SKIP_FRONTEND" == false ]]; then
         "Auth0Audience=${AUTH0_AUDIENCE}" \
         "Auth0Organization=${AUTH0_ORGANIZATION}" \
         "Auth0BaseUrl=${FRONTEND_URL}" \
+      --tags project="${PROJECT_NAME}" \
       --no-fail-on-empty-changeset
   else
     echo "AUTH0_BASE_URL already set: ${EXISTING_AUTH0_BASE_URL}"
@@ -359,6 +378,7 @@ if [[ "$SKIP_FRONTEND" == false ]]; then
         "Auth0Domain=${AUTH0_DOMAIN}" \
         "Auth0Audience=${AUTH0_AUDIENCE}" \
         "CorsOrigin=${FRONTEND_URL}" \
+      --tags "project=${PROJECT_NAME}" \
       --no-fail-on-empty-changeset \
       --resolve-image-repos
     popd > /dev/null
