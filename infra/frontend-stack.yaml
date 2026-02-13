@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  Project Portal - Frontend (App Runner)
+  TurboTech Portal - Frontend (App Runner)
   Next.js application deployed via AWS App Runner from GitHub source
 
 Parameters:
@@ -60,7 +60,7 @@ Resources:
   AppRunnerInstanceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub 'portal-${Environment}-frontend-instance-role'
+      RoleName: !Sub 'turbotech-${Environment}-frontend-instance-role'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -72,7 +72,7 @@ Resources:
   AppRunnerService:
     Type: AWS::AppRunner::Service
     Properties:
-      ServiceName: !Sub 'portal-${Environment}-frontend'
+      ServiceName: !Sub 'turbotech-${Environment}-frontend'
       SourceConfiguration:
         AuthenticationConfiguration:
           ConnectionArn: !Ref GitHubConnectionArn
@@ -105,11 +105,11 @@ Resources:
                 - Name: AUTH0_SCOPE
                   Value: 'openid profile email'
                 - Name: AUTH0_SECRET
-                  Value: !Sub '{{resolve:secretsmanager:portal-${Environment}/auth0-frontend:SecretString:AUTH0_SECRET}}'
+                  Value: !Sub '{{resolve:secretsmanager:turbotech-${Environment}/auth0-frontend:SecretString:AUTH0_SECRET}}'
                 - Name: AUTH0_CLIENT_ID
-                  Value: !Sub '{{resolve:secretsmanager:portal-${Environment}/auth0-frontend:SecretString:AUTH0_CLIENT_ID}}'
+                  Value: !Sub '{{resolve:secretsmanager:turbotech-${Environment}/auth0-frontend:SecretString:AUTH0_CLIENT_ID}}'
                 - Name: AUTH0_CLIENT_SECRET
-                  Value: !Sub '{{resolve:secretsmanager:portal-${Environment}/auth0-frontend:SecretString:AUTH0_CLIENT_SECRET}}'
+                  Value: !Sub '{{resolve:secretsmanager:turbotech-${Environment}/auth0-frontend:SecretString:AUTH0_CLIENT_SECRET}}'
       InstanceConfiguration:
         Cpu: '1 vCPU'
         Memory: '2 GB'

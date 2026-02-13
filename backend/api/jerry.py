@@ -97,61 +97,61 @@ async def get_jerry_status():
     # Software repositories
     repositories = [
         {
-            "name": "portal-platform-frontend",
+            "name": "turbotech-platform-frontend",
             "description": "React web application (Next.js 15)",
             "status": "production",
             "lastUpdated": "2026-01-11"
         },
         {
-            "name": "portal-platform-backend",
+            "name": "turbotech-platform-backend",
             "description": "FastAPI backend services",
             "status": "production",
             "lastUpdated": "2026-01-11"
         },
         {
-            "name": "portal-jerry-assistant",
+            "name": "turbotech-jerry-assistant",
             "description": "Jerry's brain (RAG, Ollama)",
             "status": "production",
             "lastUpdated": "2026-01-11"
         },
         {
-            "name": "portal-jerry-tools",
+            "name": "turbotech-jerry-tools",
             "description": "Vision + TTS services",
             "status": "production",
             "lastUpdated": "2026-01-11"
         },
         {
-            "name": "portal-jerry-training",
+            "name": "turbotech-jerry-training",
             "description": "ML training (SFT/DPO/LoRA)",
             "status": "ready",
             "lastUpdated": "2026-01-08"
         },
         {
-            "name": "portal-jerry-estimator",
+            "name": "turbotech-jerry-estimator",
             "description": "Excel workbook parser",
             "status": "ready",
             "lastUpdated": "2026-01-08"
         },
         {
-            "name": "portal-desktop-agent",
+            "name": "turbotech-desktop-agent",
             "description": "Windows voice assistant",
             "status": "production",
             "lastUpdated": "2026-01-08"
         },
         {
-            "name": "portal-docs",
+            "name": "turbotech-docs",
             "description": "Documentation & PRDs",
             "status": "active",
             "lastUpdated": "2026-01-08"
         },
         {
-            "name": "portal-platform",
+            "name": "turbotech-platform",
             "description": "Platform architecture",
             "status": "foundation",
             "lastUpdated": "2025-12-15"
         },
         {
-            "name": "portal-projectportal",
+            "name": "turbotech-projectportal",
             "description": "Project management portal",
             "status": "production",
             "lastUpdated": "2025-12-02"

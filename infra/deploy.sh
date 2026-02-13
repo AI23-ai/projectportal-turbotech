@@ -1,5 +1,5 @@
 #!/bin/bash
-# Unified deployment script for Project Portal
+# Unified deployment script for TurboTech Portal
 # Deploys: Secrets Manager + Backend (SAM) + Frontend (App Runner)
 #
 # Works for any environment (staging, prod, etc.) — all resource names
@@ -95,9 +95,9 @@ if [[ -z "$GITHUB_REPO_URL" ]]; then
 fi
 
 # ── Derive Resource Names ───────────────────────────────────────────────────
-BACKEND_STACK_NAME="portal-backend-${ENVIRONMENT}"
-SECRETS_STACK_NAME="portal-${ENVIRONMENT}-secrets"
-FRONTEND_STACK_NAME="portal-${ENVIRONMENT}-frontend"
+BACKEND_STACK_NAME="turbotech-backend-${ENVIRONMENT}"
+SECRETS_STACK_NAME="turbotech-${ENVIRONMENT}-secrets"
+FRONTEND_STACK_NAME="turbotech-${ENVIRONMENT}-frontend"
 
 echo ""
 echo "========================================"
@@ -150,7 +150,7 @@ aws cloudformation deploy \
 
 # Check if secrets still have placeholder values
 FRONTEND_SECRET=$(aws secretsmanager get-secret-value \
-  --secret-id "portal-${ENVIRONMENT}/auth0-frontend" \
+  --secret-id "turbotech-${ENVIRONMENT}/auth0-frontend" \
   --region "${REGION}" \
   --query SecretString --output text 2>/dev/null || echo "")
 
@@ -160,12 +160,12 @@ if echo "$FRONTEND_SECRET" | grep -q "PLACEHOLDER_REPLACE_ME"; then
   echo "Populate them before the frontend will work:"
   echo ""
   echo "  aws secretsmanager put-secret-value \\"
-  echo "    --secret-id portal-${ENVIRONMENT}/auth0-frontend \\"
+  echo "    --secret-id turbotech-${ENVIRONMENT}/auth0-frontend \\"
   echo "    --region ${REGION} \\"
   echo "    --secret-string '{\"AUTH0_SECRET\":\"<generate-random-32-chars>\",\"AUTH0_CLIENT_ID\":\"<from-auth0>\",\"AUTH0_CLIENT_SECRET\":\"<from-auth0>\"}'"
   echo ""
   echo "  aws secretsmanager put-secret-value \\"
-  echo "    --secret-id portal-${ENVIRONMENT}/auth0-backend \\"
+  echo "    --secret-id turbotech-${ENVIRONMENT}/auth0-backend \\"
   echo "    --region ${REGION} \\"
   echo "    --secret-string '{\"AUTH0_DOMAIN\":\"<your-tenant.us.auth0.com>\",\"AUTH0_AUDIENCE\":\"<your-api-audience>\"}'"
   echo ""
@@ -178,7 +178,7 @@ if [[ "$SKIP_BACKEND" == false ]]; then
 
   # Create SAM S3 bucket if not provided
   if [[ -z "$SAM_S3_BUCKET" ]]; then
-    SAM_S3_BUCKET="portal-deployments-${ENVIRONMENT}"
+    SAM_S3_BUCKET="turbotech-deployments-${ENVIRONMENT}"
     echo "Using default S3 bucket: ${SAM_S3_BUCKET}"
     aws s3 mb "s3://${SAM_S3_BUCKET}" --region "${REGION}" 2>/dev/null || true
   fi
@@ -186,7 +186,7 @@ if [[ "$SKIP_BACKEND" == false ]]; then
   # Read Auth0 backend config from Secrets Manager if not provided via args
   if [[ -z "$AUTH0_ISSUER_BASE_URL" ]] || [[ -z "$AUTH0_AUDIENCE" ]]; then
     BACKEND_SECRET=$(aws secretsmanager get-secret-value \
-      --secret-id "portal-${ENVIRONMENT}/auth0-backend" \
+      --secret-id "turbotech-${ENVIRONMENT}/auth0-backend" \
       --region "${REGION}" \
       --query SecretString --output text 2>/dev/null || echo "")
 
@@ -259,7 +259,7 @@ if [[ "$SKIP_FRONTEND" == false ]]; then
   fi
   if [[ -z "$AUTH0_AUDIENCE" ]]; then
     AUTH0_AUDIENCE=$(aws secretsmanager get-secret-value \
-      --secret-id "portal-${ENVIRONMENT}/auth0-backend" \
+      --secret-id "turbotech-${ENVIRONMENT}/auth0-backend" \
       --region "${REGION}" \
       --query SecretString --output text | python3 -c "import sys,json; print(json.load(sys.stdin)['AUTH0_AUDIENCE'])")
   fi

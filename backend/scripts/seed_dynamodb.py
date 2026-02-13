@@ -292,11 +292,11 @@ def main():
 
     args = parser.parse_args()
 
-    deliverables_table = f"portal-{args.env}-deliverables"
-    metrics_table = f"portal-{args.env}-metrics"
-    updates_table = f"portal-{args.env}-updates"
-    meetings_table = f"portal-{args.env}-meetings"
-    action_items_table = f"portal-{args.env}-action-items"
+    deliverables_table = f"turbotech-{args.env}-deliverables"
+    metrics_table = f"turbotech-{args.env}-metrics"
+    updates_table = f"turbotech-{args.env}-updates"
+    meetings_table = f"turbotech-{args.env}-meetings"
+    action_items_table = f"turbotech-{args.env}-action-items"
 
     print(f"\nSeeding DynamoDB tables for environment: {args.env}\n")
 

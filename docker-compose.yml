@@ -2,15 +2,15 @@ services:
   postgres:
     image: pgvector/pgvector:pg15
     environment:
-      POSTGRES_DB: portal_dev
-      POSTGRES_USER: portal_user
-      POSTGRES_PASSWORD: portal_dev_password
+      POSTGRES_DB: turbotech_dev
+      POSTGRES_USER: turbotech_user
+      POSTGRES_PASSWORD: turbotech_dev_password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U portal_user -d portal_dev"]
+      test: ["CMD-SHELL", "pg_isready -U turbotech_user -d turbotech_dev"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,7 +34,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql+asyncpg://portal_user:portal_dev_password@postgres:5432/portal_dev
+      DATABASE_URL: postgresql+asyncpg://turbotech_user:turbotech_dev_password@postgres:5432/turbotech_dev
       REDIS_URL: redis://redis:6379/0
       AUTH0_DOMAIN: ${AUTH0_DOMAIN}
       AUTH0_API_AUDIENCE: ${AUTH0_API_AUDIENCE}

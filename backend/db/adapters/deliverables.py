@@ -16,7 +16,7 @@ class DeliverableAdapter:
     def __init__(self):
         """Initialize DynamoDB connection"""
         self.dynamodb = boto3.resource('dynamodb')
-        table_name = os.environ.get('DELIVERABLES_TABLE', 'portal-dev-deliverables')
+        table_name = os.environ.get('DELIVERABLES_TABLE', 'turbotech-dev-deliverables')
         self.table = self.dynamodb.Table(table_name)
 
     def _decimal_to_python(self, obj):

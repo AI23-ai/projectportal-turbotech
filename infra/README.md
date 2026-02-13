@@ -1,6 +1,6 @@
 # Infrastructure
 
-CloudFormation templates and deployment scripts for the Project Portal.
+CloudFormation templates and deployment scripts for the TurboTech Portal.
 
 ## Architecture
 
@@ -8,9 +8,9 @@ A single `deploy.sh` script handles all environments. Resource names are derived
 
 | Stack pattern | Template | What it deploys |
 |---------------|----------|-----------------|
-| `portal-{env}-secrets` | `secrets-stack.yaml` | Secrets Manager secrets for Auth0 credentials |
-| `portal-backend-{env}` | `../backend/template-fastapi.yaml` | Lambda + API Gateway + 7 DynamoDB tables (SAM) |
-| `portal-{env}-frontend` | `frontend-stack.yaml` | App Runner service (Next.js from GitHub source) |
+| `turbotech-{env}-secrets` | `secrets-stack.yaml` | Secrets Manager secrets for Auth0 credentials |
+| `turbotech-backend-{env}` | `../backend/template-fastapi.yaml` | Lambda + API Gateway + 7 DynamoDB tables (SAM) |
+| `turbotech-{env}-frontend` | `frontend-stack.yaml` | App Runner service (Next.js from GitHub source) |
 
 ## Prerequisites
 
@@ -53,13 +53,13 @@ ENV=staging
 
 # Frontend secret
 aws secretsmanager put-secret-value \
-  --secret-id portal-${ENV}/auth0-frontend \
+  --secret-id turbotech-${ENV}/auth0-frontend \
   --region us-east-2 \
   --secret-string "{\"AUTH0_SECRET\":\"${AUTH0_SECRET}\",\"AUTH0_CLIENT_ID\":\"YOUR_CLIENT_ID\",\"AUTH0_CLIENT_SECRET\":\"YOUR_CLIENT_SECRET\"}"
 
 # Backend secret
 aws secretsmanager put-secret-value \
-  --secret-id portal-${ENV}/auth0-backend \
+  --secret-id turbotech-${ENV}/auth0-backend \
   --region us-east-2 \
   --secret-string '{"AUTH0_DOMAIN":"your-tenant.us.auth0.com","AUTH0_AUDIENCE":"https://your-api-audience"}'
 ```

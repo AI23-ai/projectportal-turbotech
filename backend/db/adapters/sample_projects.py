@@ -14,7 +14,7 @@ class SampleProjectAdapter:
     def __init__(self):
         """Initialize DynamoDB connection"""
         self.dynamodb = boto3.resource('dynamodb')
-        table_name = os.environ.get('SAMPLE_PROJECTS_TABLE', 'portal-dev-sample-projects')
+        table_name = os.environ.get('SAMPLE_PROJECTS_TABLE', 'turbotech-dev-sample-projects')
         self.table = self.dynamodb.Table(table_name)
 
     def _decimal_to_python(self, obj):

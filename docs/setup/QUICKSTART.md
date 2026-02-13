@@ -1,4 +1,4 @@
-# Quick Start Guide - Project Portal
+# Quick Start Guide - TurboTech Portal
 
 ## Prerequisites
 
@@ -129,7 +129,7 @@ Expected:
 ```json
 {
   "status": "healthy",
-  "service": "Project Portal API",
+  "service": "TurboTech Portal API",
   "version": "1.0.0"
 }
 ```

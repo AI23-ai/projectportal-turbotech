@@ -2,7 +2,7 @@
 
 ## Summary
 
-Your Project Portal has been successfully converted from PostgreSQL to DynamoDB for serverless deployment with AWS Lambda!
+Your TurboTech Portal has been successfully converted from PostgreSQL to DynamoDB for serverless deployment with AWS Lambda!
 
 ### What Changed
 
@@ -62,10 +62,10 @@ Lambda Function (1024MB)
   └─ FastAPI App (uvicorn)
        ↓
 DynamoDB Tables
-  ├─ portal-dev-deliverables
-  ├─ portal-dev-metrics
-  ├─ portal-dev-updates
-  └─ portal-dev-users
+  ├─ turbotech-dev-deliverables
+  ├─ turbotech-dev-metrics
+  ├─ turbotech-dev-updates
+  └─ turbotech-dev-users
 ```
 
 ---
@@ -89,7 +89,7 @@ aws configure
 ### 2. Create S3 Deployment Bucket
 
 ```bash
-aws s3 mb s3://project-portal-deployments-dev --region us-east-1
+aws s3 mb s3://project-turbotech-deployments-dev --region us-east-1
 ```
 
 ### 3. Deploy Backend
@@ -99,7 +99,7 @@ cd backend
 
 ./deploy.sh \
   --env=dev \
-  --s3-bucket=project-portal-deployments-dev \
+  --s3-bucket=project-turbotech-deployments-dev \
   --auth0-domain=your-domain.auth0.com \
   --auth0-audience=https://api.your-domain.example.com
 ```
@@ -120,13 +120,13 @@ python scripts/seed_dynamodb.py --env=dev
 ```
 🌱 Seeding DynamoDB tables for environment: dev
 
-Seeding 12 deliverables to portal-dev-deliverables...
+Seeding 12 deliverables to turbotech-dev-deliverables...
   ✓ Added: Drawing Parsing Prototype
   ✓ Added: Estimator Profile Analysis
   ...
 ✅ Successfully seeded 12 deliverables!
 
-Seeding 4 metrics to portal-dev-metrics...
+Seeding 4 metrics to turbotech-dev-metrics...
   ✓ Added: Drawing Parsing Accuracy
   ✓ Added: Time Reduction
   ...
@@ -340,7 +340,7 @@ mv api/ models/ services/ db/ main.py app/
 
 **Check CloudWatch logs:**
 ```bash
-sam logs --stack-name project-portal-backend-dev --tail
+sam logs --stack-name project-turbotech-backend-dev --tail
 ```
 
 **Common causes:**
@@ -368,10 +368,10 @@ Policies:
 aws dynamodb list-tables --region us-east-1
 
 # Should see:
-# - portal-dev-deliverables
-# - portal-dev-metrics
-# - portal-dev-updates
-# - portal-dev-users
+# - turbotech-dev-deliverables
+# - turbotech-dev-metrics
+# - turbotech-dev-updates
+# - turbotech-dev-users
 ```
 
 ---
@@ -407,7 +407,7 @@ aws dynamodb list-tables --region us-east-1
 - CloudWatch Logs for debugging
 
 **Issues?**
-- Check CloudWatch Logs: `sam logs --stack-name project-portal-backend-dev --tail`
+- Check CloudWatch Logs: `sam logs --stack-name project-turbotech-backend-dev --tail`
 - Test locally: `sam local start-api`
 - Verify DynamoDB tables exist in AWS Console
 

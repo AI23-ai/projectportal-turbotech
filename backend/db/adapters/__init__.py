@@ -1,5 +1,5 @@
 """
-DynamoDB Adapters for Project Portal
+DynamoDB Adapters for TurboTech Portal
 Provides SQLAlchemy-like interface for DynamoDB operations
 """
 from .deliverables import DeliverableAdapter

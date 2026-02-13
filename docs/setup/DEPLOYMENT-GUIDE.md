@@ -1,4 +1,4 @@
-# Project Portal - Deployment Guide
+# TurboTech Portal - Deployment Guide
 
 This document clarifies which deployment files are actively used vs obsolete to prevent confusion for future development teams.
 
@@ -47,7 +47,7 @@ sam build --template-file template-fastapi.yaml
 # Deploy
 sam deploy \
   --template-file .aws-sam/build/template.yaml \
-  --stack-name portal-backend-dev \
+  --stack-name turbotech-backend-dev \
   --capabilities CAPABILITY_IAM \
   --region <your-aws-region> \
   --parameter-overrides \
@@ -138,9 +138,9 @@ Configured in CloudFormation stack parameters:
 - `Auth0Audience=https://api.<your-production-domain>`
 
 DynamoDB table names set via environment variables:
-- `DELIVERABLES_TABLE=portal-dev-deliverables`
-- `METRICS_TABLE=portal-dev-metrics`
-- `UPDATES_TABLE=portal-dev-updates`
+- `DELIVERABLES_TABLE=turbotech-dev-deliverables`
+- `METRICS_TABLE=turbotech-dev-metrics`
+- `UPDATES_TABLE=turbotech-dev-updates`
 
 ### **Local Development**
 Use `.env.local` files:
@@ -168,7 +168,7 @@ Use `.env.local` files:
    ```bash
    sam deploy \
      --template-file .aws-sam/build/template.yaml \
-     --stack-name portal-backend-dev \
+     --stack-name turbotech-backend-dev \
      --capabilities CAPABILITY_IAM \
      --region <your-aws-region>
    ```

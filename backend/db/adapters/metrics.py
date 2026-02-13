@@ -14,7 +14,7 @@ class MetricAdapter:
     def __init__(self):
         """Initialize DynamoDB connection"""
         self.dynamodb = boto3.resource('dynamodb')
-        table_name = os.environ.get('METRICS_TABLE', 'portal-dev-metrics')
+        table_name = os.environ.get('METRICS_TABLE', 'turbotech-dev-metrics')
         self.table = self.dynamodb.Table(table_name)
 
     def _decimal_to_python(self, obj):

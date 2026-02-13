@@ -1,6 +1,6 @@
-# Project Portal Template
+# TurboTech Portal
 
-A serverless project tracking portal built with Next.js, FastAPI, DynamoDB, and Auth0. Track deliverables, metrics, updates, meetings, and action items for any project engagement.
+A serverless project tracking portal for TurboTech, built with Next.js, FastAPI, DynamoDB, and Auth0. Track deliverables, metrics, updates, meetings, and action items.
 
 ## Architecture
 
@@ -21,7 +21,7 @@ Frontend (Next.js)  -->  Backend (FastAPI)  -->  DynamoDB
 
 ```bash
 # Clone and configure
-git clone <repo-url> && cd project-portal
+git clone <repo-url> && cd projectportal-turbotech
 cp .env.example .env
 cp frontend/.env.local.example frontend/.env.local
 cp backend/.env.example backend/.env

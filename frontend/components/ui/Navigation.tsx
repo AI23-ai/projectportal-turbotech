@@ -99,7 +99,7 @@ export default function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <span className="text-lg sm:text-xl font-bold text-gray-900">
-              Project Portal
+              TurboTech Portal
             </span>
           </Link>
 

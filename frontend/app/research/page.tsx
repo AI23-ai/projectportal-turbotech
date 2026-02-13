@@ -816,7 +816,7 @@ export default function Research() {
                 <div className="bg-white border border-gray-200 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-900 mb-2">Database Schema</h4>
                   <p className="text-sm text-gray-700 mb-2">
-                    Complete schema provided for integration with Project Portal database.
+                    Complete schema provided for integration with TurboTech Portal database.
                   </p>
                   <ul className="space-y-1 text-sm text-gray-700">
                     <li>• <strong>Projects:</strong> Project metadata, PDFs</li>

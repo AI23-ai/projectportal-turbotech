@@ -1,5 +1,5 @@
 """
-Project Portal - FastAPI Backend
+TurboTech Portal - FastAPI Backend
 Main application entry point
 """
 from fastapi import FastAPI
@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
-    title="Project Portal API",
-    description="Real-time project tracking and transparency portal",
+    title="TurboTech Portal API",
+    description="Real-time project tracking and transparency portal for TurboTech",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
@@ -74,7 +74,7 @@ async def shutdown_event():
 async def root():
     """Root endpoint"""
     return {
-        "message": "Project Portal API",
+        "message": "TurboTech Portal API",
         "version": "1.0.0",
         "docs": "/docs"
     }

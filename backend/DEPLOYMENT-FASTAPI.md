@@ -1,4 +1,4 @@
-# Project Portal - FastAPI + Lambda Web Adapter Deployment
+# TurboTech Portal - FastAPI + Lambda Web Adapter Deployment
 
 ## Overview
 
@@ -89,7 +89,7 @@ aws sts get-caller-identity
 ### 4. Create S3 Deployment Bucket (One-time)
 
 ```bash
-aws s3 mb s3://project-portal-deployments-dev --region us-east-1
+aws s3 mb s3://project-turbotech-deployments-dev --region us-east-1
 ```
 
 ---
@@ -113,7 +113,7 @@ cd backend
 # Deploy to dev environment
 ./deploy.sh \
   --env=dev \
-  --s3-bucket=project-portal-deployments-dev \
+  --s3-bucket=project-turbotech-deployments-dev \
   --auth0-domain=your-domain.auth0.com \
   --auth0-audience=https://api.your-domain.example.com
 ```
@@ -228,10 +228,10 @@ AUTH0_AUDIENCE=https://api...
 CORS_ORIGIN=*                      # Or specific domain
 
 # DynamoDB table names
-DELIVERABLES_TABLE=portal-dev-deliverables
-METRICS_TABLE=portal-dev-metrics
-UPDATES_TABLE=portal-dev-updates
-USERS_TABLE=portal-dev-users
+DELIVERABLES_TABLE=turbotech-dev-deliverables
+METRICS_TABLE=turbotech-dev-metrics
+UPDATES_TABLE=turbotech-dev-updates
+USERS_TABLE=turbotech-dev-users
 ```
 
 Access in FastAPI:
@@ -252,7 +252,7 @@ table_name = os.environ['DELIVERABLES_TABLE']
 vim app/api/deliverables.py
 
 # 2. Deploy (only rebuilds changed Lambda)
-./deploy.sh --env=dev --s3-bucket=project-portal-deployments-dev
+./deploy.sh --env=dev --s3-bucket=project-turbotech-deployments-dev
 
 # 3. Test
 curl https://your-api/api/deliverables
@@ -264,7 +264,7 @@ curl https://your-api/api/deliverables
 # Deploy to production
 ./deploy.sh \
   --env=prod \
-  --s3-bucket=project-portal-deployments-prod \
+  --s3-bucket=project-turbotech-deployments-prod \
   --auth0-domain=your-domain.auth0.com \
   --auth0-audience=https://api.your-domain.example.com \
   --cors-origin=https://app.your-domain.example.com
@@ -274,14 +274,14 @@ curl https://your-api/api/deliverables
 
 ```bash
 # Create separate buckets
-aws s3 mb s3://project-portal-deployments-dev
-aws s3 mb s3://project-portal-deployments-staging
-aws s3 mb s3://project-portal-deployments-prod
+aws s3 mb s3://project-turbotech-deployments-dev
+aws s3 mb s3://project-turbotech-deployments-staging
+aws s3 mb s3://project-turbotech-deployments-prod
 
 # Deploy to each
-./deploy.sh --env=dev --s3-bucket=project-portal-deployments-dev
-./deploy.sh --env=staging --s3-bucket=project-portal-deployments-staging
-./deploy.sh --env=prod --s3-bucket=project-portal-deployments-prod
+./deploy.sh --env=dev --s3-bucket=project-turbotech-deployments-dev
+./deploy.sh --env=staging --s3-bucket=project-turbotech-deployments-staging
+./deploy.sh --env=prod --s3-bucket=project-turbotech-deployments-prod
 ```
 
 ---
@@ -292,10 +292,10 @@ aws s3 mb s3://project-portal-deployments-prod
 
 ```bash
 # Tail logs in real-time
-sam logs --stack-name project-portal-backend-dev --tail
+sam logs --stack-name project-turbotech-backend-dev --tail
 
 # View specific time range
-sam logs --stack-name project-portal-backend-dev \
+sam logs --stack-name project-turbotech-backend-dev \
   --start-time '10min ago' \
   --end-time '5min ago'
 ```
@@ -303,7 +303,7 @@ sam logs --stack-name project-portal-backend-dev \
 ### CloudWatch Logs (AWS Console)
 
 1. Go to CloudWatch → Log Groups
-2. Find `/aws/lambda/project-portal-backend-dev-FastAPIFunction-xxx`
+2. Find `/aws/lambda/project-turbotech-backend-dev-FastAPIFunction-xxx`
 3. View log streams
 
 ### Common Issues
@@ -381,7 +381,7 @@ ls -la app/main.py  # Should exist
 
 Check CloudWatch logs:
 ```bash
-sam logs --stack-name project-portal-backend-dev --tail
+sam logs --stack-name project-turbotech-backend-dev --tail
 ```
 
 Common causes:

@@ -16,7 +16,7 @@ class MeetingAdapter:
     def __init__(self):
         """Initialize DynamoDB connection"""
         self.dynamodb = boto3.resource('dynamodb')
-        table_name = os.environ.get('MEETINGS_TABLE', 'portal-dev-meetings')
+        table_name = os.environ.get('MEETINGS_TABLE', 'turbotech-dev-meetings')
         self.table = self.dynamodb.Table(table_name)
 
     def _decimal_to_python(self, obj):

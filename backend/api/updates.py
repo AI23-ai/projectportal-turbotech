@@ -92,7 +92,7 @@ async def acknowledge_update(update_id: int, user_email: str):
     import os
 
     dynamodb = boto3.resource('dynamodb')
-    table_name = os.environ.get('UPDATES_TABLE', 'portal-dev-updates')
+    table_name = os.environ.get('UPDATES_TABLE', 'turbotech-dev-updates')
     table = dynamodb.Table(table_name)
 
     table.update_item(

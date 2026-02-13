@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Project Portal - FastAPI + Lambda Web Adapter + DynamoDB
+  TurboTech Portal - FastAPI + Lambda Web Adapter + DynamoDB
   Deploys entire FastAPI application as single Lambda function
 
 Parameters:
@@ -50,7 +50,7 @@ Resources:
         Variables:
           ENVIRONMENT: !Ref Environment
           LOG_LEVEL: !Ref LogLevel
-          DYNAMODB_TABLE_PREFIX: !Sub 'portal-${Environment}'
+          DYNAMODB_TABLE_PREFIX: !Sub 'turbotech-${Environment}'
           AUTH0_DOMAIN: !Ref Auth0Domain
           AUTH0_AUDIENCE: !Ref Auth0Audience
           CORS_ORIGIN: !Ref CorsOrigin
@@ -109,7 +109,7 @@ Resources:
   UsersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "portal-${Environment}-users"
+      TableName: !Sub "turbotech-${Environment}-users"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
@@ -139,7 +139,7 @@ Resources:
   DeliverablesTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "portal-${Environment}-deliverables"
+      TableName: !Sub "turbotech-${Environment}-deliverables"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
@@ -161,7 +161,7 @@ Resources:
   MetricsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "portal-${Environment}-metrics"
+      TableName: !Sub "turbotech-${Environment}-metrics"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
@@ -174,7 +174,7 @@ Resources:
   UpdatesTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "portal-${Environment}-updates"
+      TableName: !Sub "turbotech-${Environment}-updates"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
@@ -206,7 +206,7 @@ Resources:
   SampleProjectsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "portal-${Environment}-sample-projects"
+      TableName: !Sub "turbotech-${Environment}-sample-projects"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
@@ -228,7 +228,7 @@ Resources:
   ActionItemsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "portal-${Environment}-action-items"
+      TableName: !Sub "turbotech-${Environment}-action-items"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
@@ -266,7 +266,7 @@ Resources:
   MeetingsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "portal-${Environment}-meetings"
+      TableName: !Sub "turbotech-${Environment}-meetings"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id

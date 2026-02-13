@@ -1,4 +1,4 @@
-# Project Portal - AWS Deployment Guide
+# TurboTech Portal - AWS Deployment Guide
 
 ## Overview
 
@@ -91,8 +91,8 @@ aws sts get-caller-identity
 
 ```bash
 # One-time setup per environment
-aws s3 mb s3://project-portal-deployments-dev --region us-east-1
-aws s3 mb s3://project-portal-deployments-prod --region us-east-1
+aws s3 mb s3://project-turbotech-deployments-dev --region us-east-1
+aws s3 mb s3://project-turbotech-deployments-prod --region us-east-1
 ```
 
 ## Deployment Steps
@@ -105,7 +105,7 @@ cd backend
 # Deploy to dev environment
 ./deploy.sh \
   --env=dev \
-  --s3-bucket=project-portal-deployments-dev \
+  --s3-bucket=project-turbotech-deployments-dev \
   --auth0-domain=your-domain.auth0.com \
   --auth0-audience=https://api.your-domain.example.com
 ```
@@ -115,7 +115,7 @@ cd backend
 ```bash
 ./deploy.sh \
   --env=prod \
-  --s3-bucket=project-portal-deployments-prod \
+  --s3-bucket=project-turbotech-deployments-prod \
   --region=us-east-1 \
   --auth0-domain=your-domain.auth0.com \
   --auth0-audience=https://api.your-domain.example.com \
@@ -133,7 +133,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 Then deploy:
 ```bash
-./deploy.sh --env=dev --s3-bucket=project-portal-deployments-dev
+./deploy.sh --env=dev --s3-bucket=project-turbotech-deployments-dev
 ```
 
 ## Post-Deployment
@@ -193,17 +193,17 @@ curl http://localhost:3000/api/health
 vim lambda/deliverables/list.py
 
 # Deploy (SAM only uploads changed functions)
-./deploy.sh --env=dev --s3-bucket=project-portal-deployments-dev
+./deploy.sh --env=dev --s3-bucket=project-turbotech-deployments-dev
 ```
 
 ### View Logs
 
 ```bash
 # CloudWatch Logs
-sam logs --stack-name project-portal-backend-dev --tail
+sam logs --stack-name project-turbotech-backend-dev --tail
 
 # Or use AWS Console
-# CloudWatch → Log Groups → /aws/lambda/portal-dev-*
+# CloudWatch → Log Groups → /aws/lambda/turbotech-dev-*
 ```
 
 ## DynamoDB Tables
@@ -260,7 +260,7 @@ GSI: TypeIndex
 
 Create the deployment bucket:
 ```bash
-aws s3 mb s3://project-portal-deployments-dev --region us-east-1
+aws s3 mb s3://project-turbotech-deployments-dev --region us-east-1
 ```
 
 ### Lambda Timeout Errors
@@ -288,17 +288,17 @@ Check IAM policies in `template.yaml`. Lambda functions need:
 ## Clean Up (Delete Stack)
 
 ```bash
-aws cloudformation delete-stack --stack-name project-portal-backend-dev
+aws cloudformation delete-stack --stack-name project-turbotech-backend-dev
 
 # Delete deployment artifacts
-aws s3 rb s3://project-portal-deployments-dev --force
+aws s3 rb s3://project-turbotech-deployments-dev --force
 ```
 
 ## Comparison to WashCAD
 
 This deployment follows the exact same pattern as the WashCAD project:
 
-| Feature | WashCAD | Project Portal |
+| Feature | WashCAD | TurboTech Portal |
 |---------|---------|--------------|
 | Deployment Tool | SAM | SAM |
 | Compute | Lambda | Lambda |
@@ -308,7 +308,7 @@ This deployment follows the exact same pattern as the WashCAD project:
 | Deploy Script | deploy.sh | deploy.sh |
 | Cost | ~$5/month | ~$5-15/month |
 
-**Key Difference:** Project Portal is much simpler - no file uploads, no weather data, just CRUD for project tracking.
+**Key Difference:** TurboTech Portal is much simpler - no file uploads, no weather data, just CRUD for project tracking.
 
 ## Next Steps
 

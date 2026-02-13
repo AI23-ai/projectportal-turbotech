@@ -16,7 +16,7 @@ class ActionItemAdapter:
     def __init__(self):
         """Initialize DynamoDB connection"""
         self.dynamodb = boto3.resource('dynamodb')
-        table_name = os.environ.get('ACTION_ITEMS_TABLE', 'portal-dev-action-items')
+        table_name = os.environ.get('ACTION_ITEMS_TABLE', 'turbotech-dev-action-items')
         self.table = self.dynamodb.Table(table_name)
 
     def _decimal_to_python(self, obj):

@@ -6,7 +6,7 @@ import { UserProvider } from "@auth0/nextjs-auth0/client";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Project Portal",
+  title: "TurboTech Portal",
   description: "Real-time project tracking and transparency portal",
 };
 

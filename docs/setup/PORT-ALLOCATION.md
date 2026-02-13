@@ -6,7 +6,7 @@ This document tracks all service port assignments to prevent port conflicts duri
 
 ## Current Port Allocation
 
-### Project Portal
+### TurboTech Portal
 
 | Service | Port | Protocol | Usage |
 |---------|------|----------|-------|
@@ -17,7 +17,7 @@ This document tracks all service port assignments to prevent port conflicts duri
 
 ## Quick Reference
 
-### Project Portal URLs
+### TurboTech Portal URLs
 
 **Local Development**:
 ```

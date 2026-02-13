@@ -364,16 +364,16 @@ export default function JerryToolsPage() {
             </thead>
             <tbody>
               {[
-                { name: "portal-platform-frontend", desc: "React web application (Next.js 15)", status: "production" },
-                { name: "portal-platform-backend", desc: "FastAPI backend services", status: "production" },
-                { name: "portal-jerry-assistant", desc: "Jerry's brain (RAG, Ollama)", status: "production" },
-                { name: "portal-jerry-tools", desc: "Vision + TTS services", status: "production" },
-                { name: "portal-jerry-training", desc: "ML training (SFT/DPO/LoRA)", status: "ready" },
-                { name: "portal-jerry-estimator", desc: "Excel workbook parser", status: "ready" },
-                { name: "portal-desktop-agent", desc: "Windows voice assistant", status: "production" },
-                { name: "portal-docs", desc: "Documentation & PRDs", status: "active" },
-                { name: "portal-platform", desc: "Platform architecture", status: "foundation" },
-                { name: "portal-projectportal", desc: "Project management portal", status: "production" }
+                { name: "turbotech-platform-frontend", desc: "React web application (Next.js 15)", status: "production" },
+                { name: "turbotech-platform-backend", desc: "FastAPI backend services", status: "production" },
+                { name: "turbotech-jerry-assistant", desc: "Jerry's brain (RAG, Ollama)", status: "production" },
+                { name: "turbotech-jerry-tools", desc: "Vision + TTS services", status: "production" },
+                { name: "turbotech-jerry-training", desc: "ML training (SFT/DPO/LoRA)", status: "ready" },
+                { name: "turbotech-jerry-estimator", desc: "Excel workbook parser", status: "ready" },
+                { name: "turbotech-desktop-agent", desc: "Windows voice assistant", status: "production" },
+                { name: "turbotech-docs", desc: "Documentation & PRDs", status: "active" },
+                { name: "turbotech-platform", desc: "Platform architecture", status: "foundation" },
+                { name: "turbotech-projectportal", desc: "Project management portal", status: "production" }
               ].map((repo) => (
                 <tr key={repo.name} className="border-b hover:bg-gray-50">
                   <td className="py-2 px-3 font-mono text-blue-600">{repo.name}</td>

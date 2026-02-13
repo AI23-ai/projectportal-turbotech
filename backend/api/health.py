@@ -11,6 +11,6 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "service": "Project Portal API",
+        "service": "TurboTech Portal API",
         "version": "1.0.0"
     }
