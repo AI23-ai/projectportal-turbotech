@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  TurboTech Portal - Frontend (App Runner)
+  Project Portal - Frontend (App Runner)
   Next.js application deployed via AWS App Runner from GitHub source
 
 Parameters:
@@ -11,6 +11,14 @@ Parameters:
       - staging
       - prod
     Description: Deployment environment
+
+  ClientName:
+    Type: String
+    Description: Client short name (e.g., turbotech, fpls)
+
+  ProjectName:
+    Type: String
+    Description: Project short name (e.g., portal, boss)
 
   GitHubConnectionArn:
     Type: String
@@ -29,10 +37,10 @@ Parameters:
     Default: main
     Description: Branch to deploy from
 
-  ApiGatewayUrl:
+  BackendUrl:
     Type: String
     Description: >
-      Backend API Gateway URL (e.g., https://abc123.execute-api.us-east-2.amazonaws.com).
+      Backend URL (e.g., https://abc123.execute-api.us-east-2.amazonaws.com or https://abc123.awsapprunner.com).
       Obtain from the backend stack output after deploying it.
 
   Auth0IssuerBaseUrl:
@@ -60,7 +68,7 @@ Resources:
   AppRunnerInstanceRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub 'turbotech-${Environment}-frontend-instance-role'
+      RoleName: !Sub '${ClientName}-${Environment}-frontend-instance-role'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -72,7 +80,7 @@ Resources:
   AppRunnerService:
     Type: AWS::AppRunner::Service
     Properties:
-      ServiceName: !Sub 'turbotech-${Environment}-frontend'
+      ServiceName: !Sub '${ClientName}-${Environment}-frontend'
       SourceConfiguration:
         AuthenticationConfiguration:
           ConnectionArn: !Ref GitHubConnectionArn
@@ -86,14 +94,14 @@ Resources:
             ConfigurationSource: API
             CodeConfigurationValues:
               Runtime: NODEJS_22
-              BuildCommand: !Sub 'npm --prefix frontend ci && rm -rf frontend/.next/cache && cd frontend && NEXT_PUBLIC_API_URL=${ApiGatewayUrl} NEXT_PUBLIC_AUTH0_ORGANIZATION=${Auth0Organization} npm run build'
+              BuildCommand: !Sub 'npm --prefix frontend ci && rm -rf frontend/.next/cache && cd frontend && NEXT_PUBLIC_API_URL=${BackendUrl} NEXT_PUBLIC_AUTH0_ORGANIZATION=${Auth0Organization} npm run build'
               StartCommand: 'npm --prefix frontend start'
               Port: '3000'
               RuntimeEnvironmentVariables:
                 - Name: NODE_ENV
                   Value: production
                 - Name: NEXT_PUBLIC_API_URL
-                  Value: !Ref ApiGatewayUrl
+                  Value: !Ref BackendUrl
                 - Name: NEXT_PUBLIC_AUTH0_ORGANIZATION
                   Value: !Ref Auth0Organization
                 - Name: AUTH0_BASE_URL
@@ -105,11 +113,11 @@ Resources:
                 - Name: AUTH0_SCOPE
                   Value: 'openid profile email'
                 - Name: AUTH0_SECRET
-                  Value: !Sub '{{resolve:secretsmanager:turbotech-${Environment}/auth0-frontend:SecretString:AUTH0_SECRET}}'
+                  Value: !Sub '{{resolve:secretsmanager:${ClientName}-${Environment}-${ProjectName}/auth0-frontend:SecretString:AUTH0_SECRET}}'
                 - Name: AUTH0_CLIENT_ID
-                  Value: !Sub '{{resolve:secretsmanager:turbotech-${Environment}/auth0-frontend:SecretString:AUTH0_CLIENT_ID}}'
+                  Value: !Sub '{{resolve:secretsmanager:${ClientName}-${Environment}-${ProjectName}/auth0-frontend:SecretString:AUTH0_CLIENT_ID}}'
                 - Name: AUTH0_CLIENT_SECRET
-                  Value: !Sub '{{resolve:secretsmanager:turbotech-${Environment}/auth0-frontend:SecretString:AUTH0_CLIENT_SECRET}}'
+                  Value: !Sub '{{resolve:secretsmanager:${ClientName}-${Environment}-${ProjectName}/auth0-frontend:SecretString:AUTH0_CLIENT_SECRET}}'
       InstanceConfiguration:
         Cpu: '1 vCPU'
         Memory: '2 GB'

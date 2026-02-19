@@ -1,0 +1,289 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Project Portal - Database & Storage (Optional)
+  RDS PostgreSQL, S3, and private networking (NAT Gateway for VPC connector internet access)
+
+Parameters:
+  Environment:
+    Type: String
+    Default: staging
+    AllowedValues:
+      - staging
+      - prod
+    Description: Deployment environment
+
+  ClientName:
+    Type: String
+    Description: Client short name (e.g., turbotech, fpls)
+
+  ProjectName:
+    Type: String
+    Description: Project short name (e.g., portal, boss)
+
+  DBName:
+    Type: String
+    Default: app
+    Description: PostgreSQL database name
+
+  MasterUsername:
+    Type: String
+    Default: app_admin
+    Description: PostgreSQL master username
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID (use default VPC)
+
+  PublicSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: A public subnet for the NAT Gateway (must have IGW route)
+
+  VpcCidrBlock:
+    Type: String
+    Default: '172.31.0.0/16'
+    Description: VPC CIDR block (default VPC uses 172.31.0.0/16)
+
+  PrivateSubnetCidrA:
+    Type: String
+    Default: '172.31.128.0/24'
+    Description: CIDR for private subnet A
+
+  PrivateSubnetCidrB:
+    Type: String
+    Default: '172.31.129.0/24'
+    Description: CIDR for private subnet B
+
+  AvailabilityZoneA:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-east-2a
+    Description: AZ for private subnet A
+
+  AvailabilityZoneB:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-east-2b
+    Description: AZ for private subnet B
+
+  DBSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Subnet IDs for RDS (at least 2 AZs, existing subnets)
+
+  DBInstanceClass:
+    Type: String
+    Default: db.t4g.micro
+    AllowedValues:
+      - db.t4g.micro
+      - db.t4g.small
+      - db.t4g.medium
+    Description: RDS instance size (micro for staging, small+ for prod)
+
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: Database master password
+
+Resources:
+  # --- Private Networking (NAT Gateway for internet + VPC access) ---
+
+  NatEip:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub '${ClientName}-${Environment}-nat-eip'
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatEip.AllocationId
+      SubnetId: !Ref PublicSubnetId
+      Tags:
+        - Key: Name
+          Value: !Sub '${ClientName}-${Environment}-nat'
+
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Ref PrivateSubnetCidrA
+      AvailabilityZone: !Ref AvailabilityZoneA
+      Tags:
+        - Key: Name
+          Value: !Sub '${ClientName}-${Environment}-private-a'
+
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Ref PrivateSubnetCidrB
+      AvailabilityZone: !Ref AvailabilityZoneB
+      Tags:
+        - Key: Name
+          Value: !Sub '${ClientName}-${Environment}-private-b'
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub '${ClientName}-${Environment}-private-rt'
+
+  PrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      NatGatewayId: !Ref NatGateway
+
+  PrivateSubnetARouteAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetA
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnetBRouteAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetB
+      RouteTableId: !Ref PrivateRouteTable
+
+  # --- Security Groups ---
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub '${ClientName} ${Environment} database subnets'
+      SubnetIds: !Ref DBSubnetIds
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  VpcConnectorSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub '${ClientName} ${Environment} - App Runner VPC connector'
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub '${ClientName}-${Environment}-vpc-connector-sg'
+        - Key: Environment
+          Value: !Ref Environment
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub '${ClientName} ${Environment} - RDS PostgreSQL'
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref VpcConnectorSecurityGroup
+          Description: Allow App Runner VPC connector
+      Tags:
+        - Key: Name
+          Value: !Sub '${ClientName}-${Environment}-rds-sg'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # --- RDS PostgreSQL ---
+
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: !Sub '${ClientName}-${Environment}-${ProjectName}'
+      Engine: postgres
+      EngineVersion: '15'
+      DBInstanceClass: !Ref DBInstanceClass
+      AllocatedStorage: 20
+      StorageType: gp3
+      StorageEncrypted: true
+      DBName: !Ref DBName
+      MasterUsername: !Ref MasterUsername
+      MasterUserPassword: !Ref DBPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      BackupRetentionPeriod: 7
+      PreferredBackupWindow: '03:00-04:00'
+      PreferredMaintenanceWindow: 'sun:04:00-sun:05:00'
+      MultiAZ: false
+      PubliclyAccessible: false
+      DeletionProtection: true
+      CopyTagsToSnapshot: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Sub '${ClientName}-${ProjectName}'
+
+  # --- S3 Bucket for file uploads ---
+
+  UploadsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub '${ClientName}-${Environment}-uploads'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 90
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Sub '${ClientName}-${ProjectName}'
+
+Outputs:
+  DBEndpoint:
+    Description: RDS endpoint address
+    Value: !GetAtt DBInstance.Endpoint.Address
+    Export:
+      Name: !Sub '${AWS::StackName}-DBEndpoint'
+
+  DBPort:
+    Description: RDS endpoint port
+    Value: !GetAtt DBInstance.Endpoint.Port
+
+  UploadsBucketName:
+    Description: S3 uploads bucket name
+    Value: !Ref UploadsBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-UploadsBucketName'
+
+  UploadsBucketArn:
+    Description: S3 uploads bucket ARN
+    Value: !GetAtt UploadsBucket.Arn
+
+  VpcConnectorSecurityGroupId:
+    Description: Security group for App Runner VPC connector
+    Value: !Ref VpcConnectorSecurityGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-VpcConnectorSGId'
+
+  DBSecurityGroupId:
+    Description: Security group for RDS
+    Value: !Ref DBSecurityGroup
+
+  PrivateSubnetIds:
+    Description: Private subnet IDs for VPC connector (has NAT Gateway for internet access)
+    Value: !Sub '${PrivateSubnetA},${PrivateSubnetB}'
+    Export:
+      Name: !Sub '${AWS::StackName}-PrivateSubnetIds'

@@ -1,24 +1,45 @@
 # Infrastructure
 
-CloudFormation templates and deployment scripts for the TurboTech Portal.
+CloudFormation templates and deployment script for Project Portal.
 
 ## Architecture
 
-A single `deploy.sh` script handles all environments. Resource names are derived from `--environment`:
+A single `deploy.sh` script handles all environments. It supports two backend deployment paths, auto-detected by file existence:
 
-| Stack pattern | Template | What it deploys |
-|---------------|----------|-----------------|
-| `turbotech-{env}-secrets` | `secrets-stack.yaml` | Secrets Manager secrets for Auth0 credentials |
-| `turbotech-backend-{env}` | `../backend/template-fastapi.yaml` | Lambda + API Gateway + 7 DynamoDB tables (SAM) |
-| `turbotech-{env}-frontend` | `frontend-stack.yaml` | App Runner service (Next.js from GitHub source) |
+### SAM Backend (default)
+
+| Stack | Template | What it deploys |
+|-------|----------|-----------------|
+| `{client}-{env}-{project}-secrets` | `secrets-stack.yaml` | Secrets Manager (Auth0 + DB placeholder) |
+| `{client}-{env}-{project}-backend` | `../backend/template-fastapi.yaml` | Lambda + API Gateway (SAM) |
+| `{client}-{env}-{project}-frontend` | `frontend-stack.yaml` | App Runner (Next.js from GitHub) |
+
+### App Runner Backend (with database)
+
+Activated when `backend-stack.yaml` and `database-stack.yaml` exist in `infra/`.
+
+| Stack | Template | What it deploys |
+|-------|----------|-----------------|
+| `{client}-{env}-{project}-secrets` | `secrets-stack.yaml` | Secrets Manager (Auth0 + DB) |
+| `{client}-{env}-database` | `database-stack.yaml` | VPC networking, RDS PostgreSQL, S3 |
+| `{client}-{env}-{project}-backend` | `backend-stack.yaml` | ECR + App Runner (FastAPI) |
+| `{client}-{env}-{project}-frontend` | `frontend-stack.yaml` | App Runner (Next.js from GitHub) |
+
+### Branch Strategy
+
+| Environment | Default branch |
+|-------------|---------------|
+| `staging` | `staging` |
+| `prod` | `main` |
+
+Override with `--github-branch=BRANCH`.
 
 ## Prerequisites
 
 - **AWS CLI** configured with the target account credentials
-- **SAM CLI**: `brew install aws-sam-cli`
-- **Docker** running (for backend Lambda image build)
+- **SAM CLI**: `brew install aws-sam-cli` (SAM backend only)
+- **Docker** running (for backend container/image build)
 - **App Runner GitHub connection** (one-time setup per account, see below)
-- **Auth0 application** configured for the target environment
 
 ## First-Time Setup
 
@@ -30,99 +51,149 @@ This requires a one-time OAuth handshake per AWS account that can't be automated
 2. Click "Add new" and complete the GitHub OAuth flow
 3. Copy the connection ARN (e.g., `arn:aws:apprunner:us-east-2:123456789:connection/...`)
 
-### 2. Deploy
+### 2. (Optional) Set Up Auth0 Automation
+
+Store Auth0 M2M credentials in Secrets Manager for automated Auth0 provisioning:
+
+```bash
+aws secretsmanager create-secret \
+  --name "ai23-m2m/auth0-deploy" \
+  --secret-string '{"AUTH0_DOMAIN":"ai23-dev.us.auth0.com","AUTH0_M2M_CLIENT_ID":"...","AUTH0_M2M_CLIENT_SECRET":"..."}'
+```
+
+The M2M application needs `read:clients`, `create:clients`, `update:clients`, `read:organizations`, `create:organizations`, `update:organizations`, `read:organization_members`, `create:organization_members`, `read:connections`, `create:resource_servers`, `update:resource_servers`, `read:client_grants`, `create:client_grants` scopes.
+
+### 3. Deploy
+
+#### SAM backend (default)
 
 ```bash
 # Staging
-./deploy.sh --environment=staging --project=turbotech --github-connection-arn=arn:aws:apprunner:us-east-2:ACCOUNT:connection/NAME/ID --github-repo-url=https://github.com/YOUR-ORG/YOUR-REPO
+./deploy.sh --client=turbotech --project=portal --environment=staging \
+  --github-connection-arn=arn:aws:apprunner:us-east-2:ACCOUNT:connection/NAME/ID
 
 # Production
-./deploy.sh --environment=prod --project=turbotech --github-connection-arn=arn:aws:apprunner:us-east-2:ACCOUNT:connection/NAME/ID --github-repo-url=https://github.com/YOUR-ORG/YOUR-REPO
+./deploy.sh --client=turbotech --project=portal --environment=prod \
+  --github-connection-arn=arn:aws:apprunner:us-east-2:ACCOUNT:connection/NAME/ID
 ```
 
-### 3. Populate Secrets
+#### App Runner backend (with database)
 
-After the first deploy, the secrets have placeholder values. Update them:
+```bash
+# Staging
+./deploy.sh --client=fpls --project=boss --environment=staging \
+  --github-connection-arn=arn:aws:apprunner:us-east-2:ACCOUNT:connection/NAME/ID \
+  --vpc-id=vpc-xxx --subnet-ids=subnet-aaa,subnet-bbb --db-password=<password>
+
+# Production
+./deploy.sh --client=fpls --project=boss --environment=prod \
+  --github-connection-arn=arn:aws:apprunner:us-east-2:ACCOUNT:connection/NAME/ID \
+  --vpc-id=vpc-xxx --subnet-ids=subnet-aaa,subnet-bbb --db-password=<password>
+```
+
+### 4. Populate Secrets (if not using Auth0 automation)
+
+If you skipped Auth0 automation (`--skip-auth0`), populate secrets manually:
 
 ```bash
 # Generate a random AUTH0_SECRET
-AUTH0_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+AUTH0_SECRET=$(python3 -c "import secrets; print(secrets.token_hex(32))")
 
-# Replace ENV with 'staging' or 'prod'
+CLIENT=turbotech
+PROJECT=portal
 ENV=staging
 
 # Frontend secret
 aws secretsmanager put-secret-value \
-  --secret-id turbotech-${ENV}/auth0-frontend \
+  --secret-id "${CLIENT}-${ENV}-${PROJECT}/auth0-frontend" \
   --region us-east-2 \
   --secret-string "{\"AUTH0_SECRET\":\"${AUTH0_SECRET}\",\"AUTH0_CLIENT_ID\":\"YOUR_CLIENT_ID\",\"AUTH0_CLIENT_SECRET\":\"YOUR_CLIENT_SECRET\"}"
 
 # Backend secret
 aws secretsmanager put-secret-value \
-  --secret-id turbotech-${ENV}/auth0-backend \
+  --secret-id "${CLIENT}-${ENV}-${PROJECT}/auth0-backend" \
   --region us-east-2 \
-  --secret-string '{"AUTH0_DOMAIN":"your-tenant.us.auth0.com","AUTH0_AUDIENCE":"https://your-api-audience"}'
+  --secret-string '{"AUTH0_DOMAIN":"your-tenant.us.auth0.com","AUTH0_AUDIENCE":"https://your-api-audience","AUTH0_ORGANIZATION":"org_xxx"}'
 ```
 
-Then redeploy the frontend to pick up the real secrets:
+Then redeploy the frontend:
 
 ```bash
-./deploy.sh --environment=${ENV} --github-connection-arn=ARN --skip-backend
+./deploy.sh --client=${CLIENT} --project=${PROJECT} --environment=${ENV} \
+  --github-connection-arn=ARN --skip-backend --skip-auth0
 ```
 
-### 4. Configure Auth0
+### 5. Configure Auth0 (if not using Auth0 automation)
 
 Add these URLs to your Auth0 application settings:
 
-- **Allowed Callback URLs**: `https://<app-runner-url>/api/auth/callback`
+- **Allowed Callback URLs**: `https://<app-runner-url>/auth/callback`
 - **Allowed Logout URLs**: `https://<app-runner-url>`
 - **Allowed Web Origins**: `https://<app-runner-url>`
-
-### 5. Seed the Database
-
-```bash
-cd ../backend && python scripts/seed_dynamodb.py --env ${ENV}
-```
 
 ## Updating
 
 For subsequent deploys (code changes, config updates):
 
 ```bash
-# Full deploy (backend + frontend)
-./deploy.sh --environment=staging --github-connection-arn=ARN --github-repo-url=URL
+# Full deploy
+./deploy.sh --client=turbotech --project=portal --environment=staging \
+  --github-connection-arn=ARN --skip-auth0
 
 # Backend only
-./deploy.sh --environment=prod --github-connection-arn=ARN --skip-frontend
+./deploy.sh --client=turbotech --project=portal --environment=staging \
+  --skip-frontend --skip-auth0
 
 # Frontend only
-./deploy.sh --environment=prod --github-connection-arn=ARN --skip-backend
+./deploy.sh --client=turbotech --project=portal --environment=staging \
+  --github-connection-arn=ARN --skip-backend --skip-auth0
 ```
 
-Note: The frontend auto-deploys from GitHub on push to `main` via App Runner. Manual redeploy is only needed for infrastructure or config changes.
+Note: The frontend auto-deploys from GitHub on push via App Runner. Manual redeploy is only needed for infrastructure or config changes.
 
 ## All Options
 
 ```
-./deploy.sh --environment=<staging|prod> --github-connection-arn=ARN --github-repo-url=URL [options]
+./deploy.sh --client=NAME --project=NAME --environment=<staging|prod> [options]
 
 Required:
-  --environment=ENV              Deployment environment (staging, prod)
-  --project=NAME                 Project short name for AWS tagging (lowercase, no spaces)
-  --github-connection-arn=ARN    App Runner GitHub connection ARN
-  --github-repo-url=URL         GitHub repository URL
+  --client=NAME                Client short name (e.g., turbotech, fpls)
+  --project=NAME               Project short name (e.g., portal, boss)
+  --environment=ENV            Deployment environment (staging, prod)
+  --github-connection-arn=ARN  App Runner GitHub connection ARN
+
+Database / App Runner backend (required if database-stack.yaml exists):
+  --vpc-id=VPC_ID              VPC ID for RDS and App Runner VPC connector
+  --subnet-ids=IDS             Comma-separated subnet IDs (at least 2 AZs)
+  --db-password=PASSWORD       RDS master password (first deploy only)
+
+Auth0 automation (optional — reads from Secrets Manager if omitted):
+  --auth0-m2m-client-id=ID     Auth0 M2M client ID
+  --auth0-m2m-client-secret=S  Auth0 M2M client secret
+  --auth0-domain=DOMAIN        Auth0 tenant domain
+  --auth0-org-name=NAME        Auth0 org name (default: {client}-{env})
+  --auth0-api-audience=URL     Auth0 API audience identifier
+  --skip-auth0                 Skip Auth0 automation (use manual setup)
 
 Optional:
-  --region=REGION                AWS region (default: us-east-2)
-  --sam-s3-bucket=BUCKET         S3 bucket for SAM artifacts
-  --auth0-issuer=URL             Auth0 issuer URL (reads from Secrets Manager if omitted)
-  --auth0-audience=URL           Auth0 API audience (reads from Secrets Manager if omitted)
-  --auth0-organization=ID        Auth0 organization ID (optional)
-  --github-branch=BRANCH         Branch to deploy (default: main)
-  --skip-backend                 Skip backend deployment
-  --skip-frontend                Skip frontend deployment
+  --region=REGION              AWS region (default: us-east-2)
+  --github-repo-url=URL        GitHub repo URL (auto-derived from git remote)
+  --github-branch=BRANCH       Branch to deploy (default: staging for staging, main for prod)
+  --sam-s3-bucket=BUCKET       S3 bucket for SAM artifacts (SAM backend only)
+  --auth0-issuer=URL           Auth0 issuer URL (auto-configured if M2M creds available)
+  --auth0-audience=URL         Auth0 API audience (auto-configured if M2M creds available)
+  --auth0-organization=ID      Auth0 organization ID (override auto-derived org)
+  --db-instance-class=CLASS    RDS instance class (default: db.t4g.micro)
+  --skip-backend               Skip backend deployment
+  --skip-frontend              Skip frontend deployment
+  --skip-database              Skip database/storage deployment
 ```
 
-## Resource Tagging
+## Resource Naming & Tagging
 
-All AWS resources are tagged with `project=<name>` using the required `--project` flag. This tag propagates from CloudFormation stacks to all resources they create (DynamoDB tables, Lambda functions, API Gateway, App Runner, Secrets Manager secrets, IAM roles, etc.). The S3 artifact bucket is also tagged directly. Use this tag for cost allocation, resource filtering, and cleanup.
+All resource names are derived from `--client` and `--project`:
+- Secret prefix: `{client}-{env}-{project}/`
+- Stack names: `{client}-{env}-{project}-{component}`
+- Database stack: `{client}-{env}-database` (shared across projects)
+
+All AWS resources are tagged with `project` and `client` tags for cost allocation and filtering.

@@ -1,0 +1,185 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Project Portal - Backend (App Runner, Optional)
+  FastAPI application deployed via AWS App Runner from ECR image
+
+Parameters:
+  Environment:
+    Type: String
+    Default: staging
+    AllowedValues:
+      - staging
+      - prod
+    Description: Deployment environment
+
+  ClientName:
+    Type: String
+    Description: Client short name (e.g., turbotech, fpls)
+
+  ProjectName:
+    Type: String
+    Description: Project short name (e.g., portal, boss)
+
+  DBName:
+    Type: String
+    Default: app
+    Description: PostgreSQL database name (must match database-stack)
+
+  MasterUsername:
+    Type: String
+    Default: app_admin
+    Description: PostgreSQL master username (must match database-stack)
+
+  ImageUri:
+    Type: String
+    Description: ECR image URI for the backend container
+
+  DBEndpoint:
+    Type: String
+    Description: RDS endpoint address
+
+  DBPort:
+    Type: String
+    Default: '5432'
+    Description: RDS endpoint port
+
+  S3BucketName:
+    Type: String
+    Description: S3 bucket for file uploads
+
+  VpcConnectorSecurityGroupId:
+    Type: String
+    Description: Security group ID for VPC connector
+
+  SubnetIds:
+    Type: CommaDelimitedList
+    Description: Private subnet IDs for VPC connector (must have NAT Gateway for internet access)
+
+  Auth0IssuerBaseUrl:
+    Type: String
+    Description: 'Auth0 issuer URL (e.g., https://ai23-dev.us.auth0.com)'
+
+  CorsOrigins:
+    Type: String
+    Default: '["*"]'
+    Description: Allowed CORS origins as JSON array (tightened after frontend deploys)
+
+Resources:
+  AppRunnerInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ClientName}-${Environment}-backend-instance-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: tasks.apprunner.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub 'arn:aws:s3:::${S3BucketName}'
+                  - !Sub 'arn:aws:s3:::${S3BucketName}/*'
+        - PolicyName: SecretsManagerAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ClientName}-${Environment}-${ProjectName}/*'
+
+  AppRunnerAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ClientName}-${Environment}-backend-access-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: build.apprunner.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess
+
+  VpcConnector:
+    Type: AWS::AppRunner::VpcConnector
+    Properties:
+      VpcConnectorName: !Sub '${ClientName}-${Environment}-backend'
+      Subnets: !Ref SubnetIds
+      SecurityGroups:
+        - !Ref VpcConnectorSecurityGroupId
+
+  AppRunnerService:
+    Type: AWS::AppRunner::Service
+    Properties:
+      ServiceName: !Sub '${ClientName}-${Environment}-backend'
+      SourceConfiguration:
+        AuthenticationConfiguration:
+          AccessRoleArn: !GetAtt AppRunnerAccessRole.Arn
+        AutoDeploymentsEnabled: false
+        ImageRepository:
+          ImageIdentifier: !Ref ImageUri
+          ImageRepositoryType: ECR
+          ImageConfiguration:
+            Port: '8000'
+            RuntimeEnvironmentVariables:
+              - Name: DATABASE_URL
+                Value: !Sub
+                  - 'postgresql+asyncpg://${MasterUsername}:{{resolve:secretsmanager:${ClientName}-${Environment}-${ProjectName}/database:SecretString:DB_PASSWORD}}@${DBEndpoint}:${DBPort}/${DBName}?ssl=require'
+                  - DBEndpoint: !Ref DBEndpoint
+                    DBPort: !Ref DBPort
+              - Name: AUTH0_DOMAIN
+                Value: !Sub '{{resolve:secretsmanager:${ClientName}-${Environment}-${ProjectName}/auth0-backend:SecretString:AUTH0_DOMAIN}}'
+              - Name: AUTH0_AUDIENCE
+                Value: !Sub '{{resolve:secretsmanager:${ClientName}-${Environment}-${ProjectName}/auth0-backend:SecretString:AUTH0_AUDIENCE}}'
+              - Name: S3_BUCKET
+                Value: !Ref S3BucketName
+              - Name: S3_REGION
+                Value: !Ref 'AWS::Region'
+              - Name: STORAGE_BACKEND
+                Value: s3
+              - Name: CORS_ORIGINS
+                Value: !Ref CorsOrigins
+              - Name: ENVIRONMENT
+                Value: !Ref Environment
+              - Name: LOG_LEVEL
+                Value: INFO
+      InstanceConfiguration:
+        Cpu: '1 vCPU'
+        Memory: '2 GB'
+        InstanceRoleArn: !GetAtt AppRunnerInstanceRole.Arn
+      HealthCheckConfiguration:
+        Protocol: HTTP
+        Path: /api/health
+        Interval: 10
+        Timeout: 5
+        HealthyThreshold: 1
+        UnhealthyThreshold: 5
+      NetworkConfiguration:
+        EgressConfiguration:
+          EgressType: VPC
+          VpcConnectorArn: !GetAtt VpcConnector.VpcConnectorArn
+
+Outputs:
+  ServiceUrl:
+    Description: Backend App Runner service URL
+    Value: !Sub 'https://${AppRunnerService.ServiceUrl}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ServiceUrl'
+
+  ServiceArn:
+    Description: Backend App Runner service ARN
+    Value: !GetAtt AppRunnerService.ServiceArn
